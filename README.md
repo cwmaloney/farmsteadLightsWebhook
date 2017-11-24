@@ -1,5 +1,4 @@
 # This is the webhooks service for Farmstead Lights chatbot.
-# The chatbot uses DialogFlow
 
 This is a the webhooks for the Holiday Lights Dialogflow chatbot.
 
