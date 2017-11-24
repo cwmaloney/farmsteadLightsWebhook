@@ -1,9 +1,9 @@
 'use strict';
 
-// https://developers.google.com/actions/reference/nodejs/ApiAiApp
+// https://developers.google.com/actions/reference/nodejs/DialogflowApp
 // note that the package "actions-on-google" has two intefaces. One for
 // api.ai an another for "actions".
-const { ApiAiApp } = require('actions-on-google');
+const { DialogflowApp } = require('actions-on-google');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -260,7 +260,7 @@ function stopShow(elementName, showName) {
 // actionMap.set('stop.show', show);
 
 // const myApi = firebaseFunctions.https.onRequest((request, response) => {
-//   const app = new ApiAiApp({ request, response });
+//   const app = new DialogflowApp({ request, response });
 //   console.log(`Request headers: ${JSON.stringify(request.headers)}`);
 //   console.log(`Request body: ${JSON.stringify(request.body)}`);
 //   app.handleRequest(actionMap);
