@@ -6,21 +6,23 @@
 
 # Methods
 
-## configureUniverse(universe, configuration)
+## configureUniverse(configuration)
 
-Configuration Options:
+Parameters:
+Configuration
   * universe - the DMX universe; default is 1.
   * ipAddress -  The IP address for the universe; The default is'10.0.0.0'.
   * enableBroadcast - Use broadcast mode to send messages; The default is false.
   * port - IP port for the universe reciever; The default is0x1936.
   * sendOnlyChangeData - If true, always send the all values DMX. If false, send only changed values; Default is true.
-  * minMessageInterval = Minimun interval between packets, in milliseconds; The default 50.
-  * refreshInterval = interval, in milliseconds, before sending a repeat packet - see spec page x; The default 4000.
+  * minMessageInterval = Minimun interval between packets, in milliseconds - see spec page 48; The default 50.
+  * refreshInterval = interval, in milliseconds, before sending a repeat packet - see spec page 51; The default 4000.
 
 This method configures the library to send data for the universe and creates the UDP socket needed to send data for the universe.
 
 ## setChannelData( universe, channel, data )
 
+Parameters:
 * universe is the DMX universe.
 * channel is the DMX channel.
 * data is the channel data. It must be a value between 0 and 255, null, or undefined. If the data is null or undefined, the channel data is not changed.
@@ -28,9 +30,11 @@ This method configures the library to send data for the universe and creates the
 After the data is sent, the library will call the the call back function.
 
 ## send(universe)
+Parameters:
 * universe is the DMX universe.
 
 ## close(universe)
+Parameters:
 * universe is the DMX universe.
 
 Closes the UDP socket create for the universe.
