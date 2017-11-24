@@ -2,9 +2,7 @@
 
 This is a the webhooks for the Holiday Lights Dialogflow chatbot.
 
-## Setup Instructions
-
-References:
+### References:
 
 * [https://developers.google.com/actions/get-started/](https://developers.google.com/actions/get-started/)
 * [https://developers.google.com/actions/](https://developers.google.com/actions/)
