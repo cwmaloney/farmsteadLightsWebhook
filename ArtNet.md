@@ -8,8 +8,9 @@
 
 ## configureUniverse(configuration)
 
-Parameters:
-Configuration
+### Parameters
+
+  * configuration is an object that may have these properties:
   * universe - the DMX universe; default is 1.
   * ipAddress -  The IP address for the universe; The default is'10.0.0.0'.
   * enableBroadcast - Use broadcast mode to send messages; The default is false.
@@ -22,7 +23,7 @@ This method configures the library to send data for the universe and creates the
 
 ## setChannelData( universe, channel, data )
 
-Parameters:
+### Parameters
 * universe is the DMX universe.
 * channel is the DMX channel.
 * data is the channel data. It must be a value between 0 and 255, null, or undefined. If the data is null or undefined, the channel data is not changed.
@@ -30,16 +31,16 @@ Parameters:
 After the data is sent, the library will call the the call back function.
 
 ## send(universe)
-Parameters:
+### Parameters
 * universe is the DMX universe.
 
 ## close(universe)
-Parameters:
+### Parameters
 * universe is the DMX universe.
 
 Closes the UDP socket create for the universe.
 
-## Example 1
+# Example 1
 
 ```javascript
 const { ArtNet } = require("./ArtNet.js");
