@@ -35,7 +35,7 @@ function runNextTest() {
   const channelData = testChannelData[testIndex];
 
   console.log("ArtNetTest::runNextText", "testIndex", testIndex, 'data: ',  channelData);
-  artnet.setChannelData(universe, 0, channelData);
+  artnet.setChannelData(universe, 1, channelData);
   artnet.send(universe);
 }
 

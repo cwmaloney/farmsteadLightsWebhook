@@ -28,7 +28,7 @@ class ArtNet /*extends EventEmitter*/ {
 
     console.log("ArtNet::configureUniverse", "configuraiton", configuration);
     
-    const { universe = 0,
+    const { universe = 1,
             ipAddress = '10.0.0.0',
             enableBroadcast = false,
             port = 0x1936,
@@ -80,9 +80,9 @@ class ArtNet /*extends EventEmitter*/ {
     return universe;
   }
 
-  checkChannel(channel = 0) {
+  checkChannel(channel = 1) {
     channel = parseInt(channel, 10);
-    if (channel < 0 || channel > 511) {
+    if (channel < 1 || channel > 512) {
       throw new RangeError("ArtNet::Invalid channel "+ channel);
     }
     return channel;
@@ -147,7 +147,7 @@ class ArtNet /*extends EventEmitter*/ {
       universeInfo.changedChannelThreshold = channel;
     }
 
-    universeInfo.channelData[channel] = channelData;
+    universeInfo.channelData[channel-1] = channelData;
   }
 
   /*
