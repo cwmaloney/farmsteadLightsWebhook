@@ -6,41 +6,48 @@
  * spec: http://www.artisticlicence.com/WebSiteMaster/User%20Guides/art-net.pdf
  */
 
+ // node.js modules
 const dgram = require('dgram');
-const util = require('util');
-//const EventEmitter = require('events');
+//const util = require('util');
+const EventEmitter = require('events');
 
 // TODO: should this emit events or only use callbacks? error, sent...
-class ArtNet /*extends EventEmitter*/ {
+class ArtNet extends EventEmitter {
   constructor () {
+    super();
     this.universeInfos = [];
   }
 
   getUniverseInfo(universe) {
     const universeInfo = this.universeInfos[universe];
     if (!universeInfo) {
-      throw new Error("Universe " + universe + " has not been configured!");
+      throw new Error("ArtNet::getUniverseInfo - universe " + universe + " has not been configured!");
     }
     return universeInfo;
   }
 
-  configureUniverse( configuration) {
+  configureUniverse(configuration) {
 
     console.log("ArtNet::configureUniverse", "configuraiton", configuration);
     
     const { universe = 1,
-            ipAddress = '10.0.0.0',
+            address = '10.0.0.0',
             enableBroadcast = false,
             port = 0x1936,
             sendOnlyChangeData = true,
-            minMessageInterval = 50, /* milliseconds */
+            minMessageInterval = 25, /* milliseconds */
             refreshInterval = 4000 /* milliseconds */} = configuration;
+
+    //universe = this.checkUniverse(universe);
 
     this.universeInfos[universe] = {};
 
     const universeInfo = this.getUniverseInfo(universe);
 
-    universeInfo.ipAddress = ipAddress;
+    universeInfo.universe = universe;
+
+    universeInfo.address = address;
+    universeInfo.enableBroadcast = !!enableBroadcast;
     universeInfo.port = port;
 
     universeInfo.sendOnlyChangeData = !!sendOnlyChangeData;
@@ -68,6 +75,22 @@ class ArtNet /*extends EventEmitter*/ {
 
     // create a socket
     universeInfo.socket = dgram.createSocket({type: 'udp4', reuseAddr: true});
+
+    // enable broacast after socket is ready
+    if (universeInfo.enableBroadcast) {
+      universeInfo.socket.on('listening', function() {
+        console.log("ArtNet::configureUniverse setting broadcast for ", universe);
+        socket.setBroadcast(true);
+      });
+    }
+
+    universeInfo.socket.on('error', function () {
+      console.log("*** ArtNet::socket error, universe=", universe);
+    });
+
+    universeInfo.socket.on('close', function () {
+      console.log("ArtNet::socket closed, universe=", universe);
+    });
 
     console.log("ArtNet::configureUniverse complete", "universeInfo:", universeInfo);
   }
@@ -168,17 +191,23 @@ class ArtNet /*extends EventEmitter*/ {
 
   close() {
     for (let universe = 0; universe < universeInfos.length; universe++) {
-      const universeInfo = getUniverseInfo(universe);
-
-      this.clearInterval(universeInfo.refreshInternvalTimerId);
-      this.clearTimeout(universeInfo.throttleTimerId);
-      universeInfo.socket.close();
+      closeUniverse(universe);
     }
     universeInfos = [];
   }
 
+  closeUniverse(universe) {
+       const universeInfo = getUniverseInfo(universe);
+
+      this.clearInterval(universeInfo.refreshInternvalTimerId);
+      this.clearTimeout(universeInfo.throttleTimerId);
+      universeInfo.socket.close();
+
+    universeInfos[universe] = undefined;
+  }
+
   onRefreshTimeout(universe) {
-    console.log("ArtNet::onRefreshTimeout, universe=", universe);
+    console.log("ArtNet::onRefreshTimeout, universe="+universe);
     const universeInfo = this.getUniverseInfo(universe);
 
     universeInfo.changedChannelThreshold = universeInfo.channelData.length;
@@ -186,7 +215,6 @@ class ArtNet /*extends EventEmitter*/ {
   }
 
   onThrottleTimeout(universe) {
-    console.log("ArtNet::onThrottleTimeout universe=", "universe");
     const universeInfo = this.getUniverseInfo(universe);
 
     universeInfo.thottleTimerId = null;
@@ -202,7 +230,7 @@ class ArtNet /*extends EventEmitter*/ {
   }
 
   onAfterSend(universe) {
-    console.log("ArtNet::send - message sent, starting throttle timer", "universe", universe);
+    console.log("ArtNet::onAfterSend - starting throttle timer, universe=" + universe);
     const universeInfo = this.getUniverseInfo(universe);
 
     universeInfo.thottleTimerId = setTimeout(
@@ -213,15 +241,12 @@ class ArtNet /*extends EventEmitter*/ {
    * callback is optional
    */
   send(universe) {
-    console.log("ArtNet::send", "universe:", universe);
     const universeInfo = this.getUniverseInfo(universe);
-    
-    console.log("ArtNet::send", "universeInfo:", universeInfo);
     
         // if there is a throttle time, do not send messaage but
     // set flag so throttle timer will send the message
     if (universeInfo.thottleTimerId) {
-      console.log("ArtNet::send send throttled");
+      console.log("ArtNet::send throttled, universe=", universe);
       universeInfo.sendDelayedByThrottle = true;
       return;
     }
@@ -233,8 +258,8 @@ class ArtNet /*extends EventEmitter*/ {
       let message = this.createArtDmxMessage(universe, universeInfo.changedChannelThreshold);
       universeInfo.changedChannelThreshold = 0;
   
-      console.log("ArtNet::send - sending", "message:", message);
-      universeInfo.socket.send(message, 0, message.length, universeInfo.port, universeInfo.host,
+      console.log("ArtNet::send, universe=" + universe, "message:", message);
+      universeInfo.socket.send(message, 0, message.length, universeInfo.port, universeInfo.address,
         this.onAfterSend.bind(this, universe), universeInfo.minMessageInterval);
     }
   }

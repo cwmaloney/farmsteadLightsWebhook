@@ -82,7 +82,7 @@ npm installs packages in the folder "node_modules" withing the project folder.
 2. Start ngrok
    * Open a terminal or command line window
    * "cd" to project folder
-   * ngrok http 8080
+   * ngrok http 8000
    * Copy the hptts forwarding address displayed by ngrok
 3. Open the DialogFlow console
    * https://www.twilio.com/console/phone-numbers/incoming

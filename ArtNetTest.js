@@ -22,9 +22,7 @@ const testChannelData = [
 const artnet = new ArtNet();
 
 const universe = 1;
-
-const configuration = { universe, "ipAddress": "10.0.0.18" };
-
+const configuration = { "universe": universe, "address": "192.168.1.148" };
 artnet.configureUniverse(configuration);
 
 let testIndex = -1;
@@ -34,11 +32,11 @@ function runNextTest() {
   
   const channelData = testChannelData[testIndex];
 
-  console.log("ArtNetTest::runNextText", "testIndex", testIndex, 'data: ',  channelData);
+  console.log("--- ArtNetTest::runNextText", "testIndex", testIndex, 'data: ',  channelData);
   artnet.setChannelData(universe, 1, channelData);
   artnet.send(universe);
 }
 
 runNextTest();
 
-setInterval(runNextTest, 8000);
+setInterval(runNextTest, 10000);
