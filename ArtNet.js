@@ -8,7 +8,6 @@
 
  // node.js modules
 const dgram = require('dgram');
-//const util = require('util');
 const EventEmitter = require('events');
 
 // TODO: should this emit events or only use callbacks? error, sent...
