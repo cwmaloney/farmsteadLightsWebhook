@@ -1,7 +1,7 @@
 {
-  "name": "apiai-drcf",
-  "description": "Api.ai webhook for Holiday Lights",
-  "version": "0.0.1",
+  "name": "farmstead-lights-webhook",
+  "description": "Dialogflow webhook for Deanna Rose Children's Farmstead Holiday Lights",
+  "version": "1.0.0",
   "private": true,
   "author": "Chris Maloney",
   "engines": {
@@ -10,16 +10,12 @@
   "scripts": {
     "lint": "eslint --fix \"**/*.js\"",
     "test": "npm run lint",
-    "start": "node webhooks.js"
-    //"deploy": "firebase deploy --only functions",
-    //"logs": "firebase functions:log"
+    "start": "node webhooks.js",
+    "testArtNet": "node testArtNet.js"
   },
   "dependencies": {
-    "actions-on-google": "^1.0.0",
-    //"deep-freeze": "0.0.1",
-    //"firebase-admin": "^4.2.1",
-    //"firebase-functions": "^0.5.7",
-    //"sprintf-js": "^1.1.1"
+    "express": "^4.16.0",
+    "actions-on-google": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "^3.19.0",

@@ -8,13 +8,13 @@
       "type": "node",
       "request": "launch",
       "name": "Launch ArtNet Test",
-      "program": "${workspaceFolder}/ArtNetTest.js"
+      "program": "${workspaceFolder}/artNetTest.js"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Launch Server",
-      "program": "${workspaceFolder}/WebHooks.js"
+      "program": "${workspaceFolder}/webHooks.js"
     }
   ]
 }
