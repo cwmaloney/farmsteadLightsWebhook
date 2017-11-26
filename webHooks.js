@@ -1,23 +1,39 @@
 'use strict';
 
 // https://developers.google.com/actions/reference/nodejs/DialogflowApp
-// note that the package "actions-on-google" has two intefaces. One for
-// api.ai an another for "actions".
-const { DialogflowApp } = require('actions-on-google');
+// note that the package "actions-on-google" has two intefaces:
+// DialogflowApp supports Dialogflow web hooks
+// ActionsSdkApp provides an interface to the Actions SDK (not used here)
+// const { DialogflowApp } = require('actions-on-google');
 
 // HTTP server support
 const express = require('express');
 const bodyParser = require('body-parser');
+
+// todo - add "morgan" or something to create log files
 
 // artnet "library"
 const { ArtNet } = require("./ArtNet.js");
 
 // load this app's configuration data
 //  categories, facts, messages, etc.
-const configData = require('./config.js');
+const {facts, welcomeMessage} = require('./config.js');
 
 // TODO - what is this?
 process.env.DEBUG = 'actions-on-google:*';
+
+//////////////////////////////////////////////////////////////////////////////
+// sessionDataCache is keyed by session id from Dialogflow
+// The session data object is the value of the map.
+// The session data object contains a sequence number and creation data. This
+// library uses these trackthe age of the session.
+const sessionDataCache = new Map();
+const maxSessionCount = 100;
+let sessionCounter = 0;
+
+function getSessionData(request) {
+  return sessionDataCache[request.session];
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // Setup the ArtNet interface
@@ -28,11 +44,43 @@ const universe = 1;
 const configuration = { "universe": universe, "address": "192.168.1.148" };
 artnet.configureUniverse(configuration);
 
+//////////////////////////////////////////////////////////////////////////////
 // DMX mapping
-const elementNameToChannelMap = { cheer: 1, tree: 16, pole: 32, fence: 48, elf: 64 };
-const elementCountMap = { tree: 10 };
-const teamNameToChannelDataMap = { Chiefs: 1, Royals: 2, Sporting: 3 };
-const colorNameToChannelDataMap = { off: 0, red: 1, blue: 2, green: 3 };
+//////////////////////////////////////////////////////////////////////////////
+
+const elementNameToChannelMap = {
+  cheer: 1,
+  tree: 16,
+  poles: 32,
+  fence: 48,
+  elf: 64
+};
+
+const elementCountMap = {
+  tree: 10
+};
+
+const teamNameToChannelDataMap = {
+  Chiefs: 1,
+  Royals: 2,
+  Sporting: 3,
+  snow: 4,
+  Santa: 5,
+  USA: 6
+};
+
+const colorNameToChannelDataMap = {
+  off: 0,
+  black: 0,
+  red: 1,
+  green: 3,
+  blue: 2,
+  white: 10,
+  yellow: 11,
+  pink: 12,
+  purple: 13,
+  orange: 15
+};
 
 //////////////////////////////////////////////////////////////////////////////
 // functions to support fact requests
@@ -41,8 +89,8 @@ const colorNameToChannelDataMap = { off: 0, red: 1, blue: 2, green: 3 };
 // create an array that contains the indexes of each element of another array
 function createArrayOfIndexes(anArray) {
   const indexes = [];
-  for (let index = 0; index < anArray; index++) {
-    indexes = index;
+  for (let index = 0; index < anArray.length; index++) {
+    indexes[index] = index;
   }
   return indexes;
 }
@@ -64,35 +112,36 @@ function extractRandomElement(anArray) {
     return null;
   }
 
-  const index = Math.floor(Math.random() * array.length);
-  const fact = anArray[index];
+  const index = Math.floor(Math.random() * anArray.length);
+  const element = anArray[index];
 
   // Delete the element
   anArray.splice(index, 1);
-  return fact;
+  return element;
 }
 
 // get an unused fact
 // This also stores the list of unused facts for the category in the app data
 // api.ai maintains app.data as "session data"
-function getUnusedFacts(app, category) {
-  const sessionData = app.data;
+function getUnusedFacts(request, categoryName) {
+  const sessionData = getSessionData(request);
 
-  if (!sessionData.unusedFacts) {
+  if (sessionData.unusedFacts === undefined) {
     sessionData.unusedFacts = {};
   }
 
-  if (!sessionData.unusedFacts[category.name]) {
-      // Initialize category with list of unread facts
-    sessionData.unusedFacts[category.name] = createArrayOfIndexes(category.facts);
+  if (sessionData.unusedFacts[categoryName] === undefined) {
+    // Initialize unusedFacts with list of all facts
+    const category = facts[categoryName];
+    sessionData.unusedFacts[categoryName] = createArrayOfIndexes(category.facts);
   }
  
-  return sessionData.unusedFacts[category.name];
-};
+  return sessionData.unusedFacts[categoryName];
+}
 
 // does this session have any unfinished categories?
-function hasUnusedFacts(app, categoryName) {
-  const sessionData = app.data;
+function hasUnusedFacts(request, categoryName) {
+  const sessionData = getSessionData(request);
 
   if (!sessionData.unusedFacts) {
     sessionData.unusedFacts = {};
@@ -103,93 +152,77 @@ function hasUnusedFacts(app, categoryName) {
   }
 
   return sessionData.unusedFacts.categoryName.length > 0;
-};
+}
 
 // returns the names of unfinished categories
-function getUnfinishedCategories(app) {
+function getUnfinishedCategories(request) {
   const unfinishedCategories = [];
   for (category in configData.categories) {
     const categoryName = catgory.name;
-    if (hasUnusedFacts(app, categoryName)) {
+    if (hasUnusedFacts(request, categoryName)) {
       unfinishedCategories.push(catgoryName);
     }
   }
   return unfinishedCategories;
 }
 
-function getRandomFact(app) {
-  const screenOutput = app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT);
-  const intent = app.getIntent();
-
+function getRandomFact(request, response) {
   // lookup category
-  const categoryName = app.getArgument("category");
-  if (!categoryName || categoryName == null) {
+  const categoryName = request.parameters.categoryName;
+  if (categoryName == undefined || categoryName == null) {
     console.error('category name is missing');
-    sendSuggestions();
+    sendCategorySuggestions(request, response, categoryName);
   }
-  const category = getCategory(categoryName);
-  if (!category || category == null) {
+  const category = facts[categoryName];
+  if (category == undefined|| category == null) {
     console.error(`${categoryName} category is unrecognized`);
-    sendSuggetions;
+    sendCategorySuggestions(request, response, categoryName);
   }
 
   // get a fact
-  const unusedFactsForCategory = getUnusedFacts(app, categoryName);
-  const fact = extractRandomElement(unusedFactsForCategory);
-  if (!fact) {
-    sendSuggestions(app, category);
+  const unusedFactsForCategory = getUnusedFacts(request, categoryName);
+  const element = extractRandomElement(unusedFactsForCategory);
+  if (element == null || element == undefined) {
+    sendCategorySuggestions(request, response, categoryName);
   }
-  sendFact(app, category, fact);
+  sendFact(request, response, category, category.facts[element]);
 }
 
-function sendFact(app, category, fact) {
+function sendFact(request, response, category, fact) {
   const factPrefix = category.factPrefix;
-  if (!screenOutput) {
-    return app.ask(concat([factPrefix, fact, strings.general.nextFact]), strings.general.noInputs);
-  }
 
   let factText = null;
   let imageUrl = null;
   let imageName = null;
   let link = null;
   
-  if (typeof fact === "String") {
+  if (typeof fact === "string") {
     factText = fact;
   } else {
     factText = fact.fact;
-    image = fact.image;
-    link = fact.link;
-  }
-  const image = fact.image;
-  const [url, name] = image;
-  const card = app.buildBasicCard(factText)
-    .addButton(strings.general.linkOut, strings.content.link)
-    .setImage(url, name);
-
-  if (fact.link) {
-    card.addButton("Learn more", fact.link);
+    // imageUrl = fact.imageUrl;
+    // imageName = fact.imageName;
+    // link = fact.link;
   }
 
-  const richResponse = app.buildRichResponse()
-    .addSimpleResponse(factPrefix)
-    .addBasicCard(card)
-    .addSimpleResponse(`Would you like to hear another fact about ${category.name}?`)
-    .addSuggestions(["Sure", "No thanks"]);
+  fillResponse(request, response, factText);
+}
 
-  app.ask(richResponse, configData.noInputPrompt);
-};
-
-function sendSuggestions(app) {
-  const unfinishedCategories = getUnfinishedCategotories();
+function sendSuggestions(request, response, categoryName) {
+  const unfinishedCategories = getUnfinishedCategotories(request);
   if (unfinishedCategories.length == 0) {
-    app.tell("Looks like you've heard all my random facts!");
+    fillResponse("Looks like you've heard all my random facts!");
   }
   
-  const richResponse = app.buildRichResponse()
-    .addSimpleResponse("You have heard everything I know about %s. I could tell you about something else.")
-    .addSuggestions(unfinishedCategories);
-
-  return app.ask(richResponse, strings.general.noInputs);
+  if (categoryName) {
+    fillResponse(
+      `You have heard everything I know about ${categoryName}`);
+    }
+    else {
+      fillResponse(
+        `I'm confused.`);
+        
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -324,29 +357,32 @@ function stopShow(elementName, showName) {
 
 // Create handlers for Dialogflow actions as well as a 'default' handler
 const actionHandlers = {
-  // cheer
   'cheer': cheer,
 
   'set.element.color': setElementColor,
 
+  'get.random.fact' : getRandomFact,
+
   'check.webhook.status': (request, response) => {
-    fillResponse(request, response, 'Hello, the Farmstead Light\'s webhook server is nominal!');
+    fillResponse(request, response, '* The Farmstead Light\'s webhook server is running!');
   },
 
   // The default welcome intent has been matched, so welcome the user
   // (https://dialogflow.com/docs/events#default_welcome_intent)
   'input.welcome': (request, response) => {
-    fillResponse(request, response, 'Hello, Welcome to my Farmstead Lights agent!');
+    fillResponse(request, response, '* Welcome to my Farmstead Lights agent!');
   },
+
   // The default fallback intent has been matched - no matching intent found.
   //  try to recover (https://dialogflow.com/docs/intents#fallback_intents)
   'input.unknown': (request, response) => {
-    fillResponse(request, response, 'I\'m having trouble, can you try that again?');
+    fillResponse(request, response, '* I\'m having trouble, can you try that again?');
   },
+
   // Default handler for unknown or undefined actions
   'default': (request, response) => {
     fillResponse(request, response,
-      'Hi, I am unable to help you now - Sorry.  Please try again later.');
+      '* I am unable to help you now - Sorry.  Please try again later.');
   }
 };
 
@@ -354,30 +390,58 @@ const actionHandlers = {
 // Function to handle v2 webhook requests from Dialogflow
 //////////////////////////////////////////////////////////////////////////////
 function processV2Request (request, response) {
-  // An action is a string that identifies what the webhook should do.
-  let action = (request.body.queryResult.action) ? request.body.queryResult.action : 'default';
+  try
+  {
+    // An action is a string that identifies what the webhook should do.
+    let action = (request.body.queryResult.action) ? request.body.queryResult.action : 'default';
 
-  // If undefined or unknown action use the default handler
-  if (!actionHandlers[action]) {
-    action = 'default';
+    // If undefined or unknown action use the default handler
+    if (!actionHandlers[action]) {
+      action = 'default';
+    }
+
+    // Parameters are any entites that Dialogflow has extracted from the request.
+    // https://dialogflow.com/docs/actions-and-parameters
+    let parameters = request.body.queryResult.parameters || {};
+
+    // Contexts are ids used to track and store conversation state
+    // https://dialogflow.com/docs/contexts
+    let contexts = request.body.queryResult.contexts;
+
+    // Get the request source (Google Assistant, Slack, API, etc)
+    let source = (request.body.originalDetectIntentRequest) ? request.body.originalDetectIntentRequest.source : undefined;
+
+    // Get the session ID to differentiate calls from different users
+    let session = (request.body.session) ? request.body.session : undefined;
+
+    // create a session id if needed
+    if (!session || session == null) {
+      session = "pseudoSession-" + ++sessionCounter;
+    }
+
+    // create sessionData if needed
+    let sessionData = getSessionData(session);
+    if (sessionData === undefined) {
+      sessionData = { sequence: sessionCounter++, creationTimestamp: new Date() };
+      sessionDataCache[session] = sessionData;
+    }
+
+    if (sessionDataCache.size > maxSessionCount) {
+      // delete oldest session
+      let toDelete = undefined;
+      sessionDataCache.forEach((value, key) =>
+        { if (value.sequence < oldest) toDelete = key; } );
+      if (toDelete) {
+        sessionDataCache.delte(toDelete);
+      }
+    }
+
+    // Run the proper handler function to handle the request from Dialogflow
+    actionHandlers[action]({ action, parameters, contexts, source, session }, response);
+  } catch (error) {
+    console.error("processing Dialogflow error=", error);
+    fillResponse(request, response, "Oh! I am not feeling well. I have a bad web hook.");
   }
-
-  // Parameters are any entites that Dialogflow has extracted from the request.
-  // https://dialogflow.com/docs/actions-and-parameters
-  let parameters = request.body.queryResult.parameters || {};
-
-  // Contexts are objects used to track and store conversation state
-  // https://dialogflow.com/docs/contexts
-  let contexts = request.body.queryResult.contexts;
-
-  // Get the request source (Google Assistant, Slack, API, etc)
-  let source = (request.body.originalDetectIntentRequest) ? request.body.originalDetectIntentRequest.source : undefined;
-
-  // Get the session ID to differentiate calls from different users
-  let session = (request.body.session) ? request.body.session : undefined;
-
-  // Run the proper handler function to handle the request from Dialogflow
-  actionHandlers[action]({ action, parameters, contexts, source, session }, response);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -386,13 +450,13 @@ function processV2Request (request, response) {
 //////////////////////////////////////////////////////////////////////////////
 function fillResponse(request, response, responsePackage) {
   // if the response is a string send it as a response to the user
-  let formattedResponse = {};
+  let formattedResponse = { "source": "farmsteadLightsWebhook"};
   if (typeof responsePackage === 'string') {
     formattedResponse = {fulfillmentText: responsePackage};
   } else {
     // If the response to the user includes rich responses or contexts send them to Dialogflow
 
-    // Fet the text response
+    // Set the text response
     formattedResponse.fulfillmentText = responsePackage.fulfillmentText;
 
     // Optional: add rich messages for integrations
@@ -405,11 +469,23 @@ function fillResponse(request, response, responsePackage) {
     if (responsePackage.outputContexts) {
       formattedResponse.outputContexts = responsePackage.outputContexts;
     }
+
+    // Optional: followupEventInputs
+    // (https://dialogflow.com/docs/reference/api-v2/rest/v2beta1/WebhookResponse)
+    if (responsePackage.followupEventInput) {
+      formattedResponse.followupEventInput = responsePackage.followupEventInput;
+    }
+  }
+  // if the web hook does not set output context, use the context
+  // configured in intent
+  if (formattedResponse.outputContexts === undefined
+        || formattedResponse.outputContexts == null) {
+    formattedResponse.outputContexts = request.contexts;
   }
 
   // Send the response to Dialogflow
   response.json(formattedResponse);
-  console.log('webhook fillResponse: ' + JSON.stringify(formattedResponse));
+  console.log('webhook fillResponse: ', formattedResponse);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -418,26 +494,29 @@ function fillResponse(request, response, responsePackage) {
 
 const server = express();
 
-server.use(bodyParser.urlencoded( { extended: true} ) );
+server.use(bodyParser.urlencoded( { extended: true } ) );
 
 server.use(bodyParser.json());
 
 server.post('/webhook', function(request, response) {
-  console.log('webhook: request headers: ' + JSON.stringify(request.headers));
-  console.log('webhook: request body: ' + JSON.stringify(request.body));
+  try {
+    console.log('webhook post', 'headers', request.headers, 'body', request.body);
 
-  if (request.body.queryResult) {
-    processV2Request(request, response);
-  } else {
-    console.log('webhook response: Invalid Request (missing queryResult section)');
-    return response.status(400).end('Invalid Request - expecting v2 Dialogflow webhook request');
-  }
+    if (request.body.queryResult) {
+      processV2Request(request, response);
+    } else {
+      console.log('webhook response: Invalid Request (missing queryResult section)');
+      return response.status(400).end('Invalid Request - expecting v2 Dialogflow webhook request');
+    }
+   } catch (error)
+   {
+      console.error('webhook caught error', error);
+   }
 });
 
-server.get('/status', function(req, res) {
-  return res.json({
-      speech: "Okay",
-      displayText: "Okay",
+server.get('/status', function(request, response) {
+  return response.json({
+      status: "Okay",
       source: 'webhook-farmstead-lights'
   });
 });
@@ -545,4 +624,56 @@ server.listen(port, function() {
 //     console.log('Response to Dialogflow: ' + JSON.stringify(responseJson));
 //     response.json(responseJson); // Send response to Dialogflow
 //   }
+// }
+
+// these will be to support "Google actions"
+
+// function sendFact(request, response, category, fact) {
+//   const factPrefix = category.factPrefix;
+//   // if (!screenOutput) {
+//   //   return app.ask(concat([factPrefix, fact, strings.general.nextFact]), strings.general.noInputs);
+//   // }
+
+//   let factText = null;
+//   let imageUrl = null;
+//   let imageName = null;
+//   let link = null;
+  
+//   if (typeof fact === "String") {
+//     factText = fact;
+//   } else {
+//     factText = fact.fact;
+//     image = fact.image;
+//     link = fact.link;
+//   }
+//   const image = fact.image;
+//   const [url, name] = image;
+//   const card = app.buildBasicCard(factText)
+//     .addButton(strings.general.linkOut, strings.content.link)
+//     .setImage(url, name);
+
+//   if (fact.link) {
+//     card.addButton("Learn more", fact.link);
+//   }
+
+//   const richResponse = app.buildRichResponse()
+//     .addSimpleResponse(factPrefix)
+//     .addBasicCard(card)
+//     .addSimpleResponse(`Would you like to hear another fact about ${category.name}?`)
+//     .addSuggestions(["Sure", "No thanks"]);
+
+//   app.ask(richResponse, configData.noInputPrompt);
+// };
+
+// function sendSuggestions(app) {
+//   const unfinishedCategories = getUnfinishedCategotories();
+//   if (unfinishedCategories.length == 0) {
+//     fillResponse("Looks like you've heard all my random facts!");
+//   }
+  
+//   const richResponse = app.buildRichResponse()
+//     .addSimpleResponse("You have heard everything I know about %s. I could tell you about something else.")
+//     .addSuggestions(unfinishedCategories);
+
+//   return app.ask(richResponse, strings.general.noInputs);
 // }

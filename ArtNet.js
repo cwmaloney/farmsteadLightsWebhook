@@ -231,7 +231,7 @@ class ArtNet extends EventEmitter {
   }
 
   onRefreshTimeout(universe) {
-    console.log("ArtNet::onRefreshTimeout, universe="+universe);
+    console.log("ArtNet::onRefreshTimeout, universe=" + universe);
     const universeInfo = this.getUniverseInfo(universe);
 
     universeInfo.changedChannelThreshold = universeInfo.channelData.length;
@@ -270,7 +270,7 @@ class ArtNet extends EventEmitter {
         // if there is a throttle time, do not send messaage but
     // set flag so throttle timer will send the message
     if (universeInfo.thottleTimerId) {
-      console.log("ArtNet::send throttled, universe=", universe);
+      console.log("ArtNet::send throttled, universe=" + universe);
       universeInfo.sendDelayedByThrottle = true;
       return;
     }
