@@ -33,7 +33,9 @@ class ArtNet extends EventEmitter {
             address = '10.0.0.0',
             enableBroadcast = false,
             port = 0x1936,
+            sourcePort,
             sendOnlyChangeData = true,
+            sendSequenceNumbers = true,
             minMessageInterval = 25, /* milliseconds */
             refreshInterval = 4000 /* milliseconds */} = configuration;
 
@@ -49,7 +51,13 @@ class ArtNet extends EventEmitter {
     universeInfo.enableBroadcast = !!enableBroadcast;
     universeInfo.port = port;
 
+    if (sourcePort) {
+      universeInfo.sourcePort = sourcePort;
+    }
+
     universeInfo.sendOnlyChangeData = !!sendOnlyChangeData;
+
+    universeInfo.sendSequenceNumbers = !!sendSequenceNumbers;
 
     // see spec page 48; milliseconds
     universeInfo.minMessageInterval = minMessageInterval;
@@ -79,9 +87,11 @@ class ArtNet extends EventEmitter {
     if (universeInfo.enableBroadcast) {
       universeInfo.socket.on('listening', function() {
         console.log("ArtNet::configureUniverse setting broadcast for ", universe);
-        socket.setBroadcast(true);
+        universeInfo.socket.setBroadcast(true);
       });
     }
+
+    universeInfo.packetSequenceNumber = 1;
 
     universeInfo.socket.on('error', function () {
       console.log("*** ArtNet::socket error, universe=", universe);
@@ -90,6 +100,10 @@ class ArtNet extends EventEmitter {
     universeInfo.socket.on('close', function () {
       console.log("ArtNet::socket closed, universe=", universe);
     });
+
+    if (sourcePort) {
+      universeInfo.socket.bind(sourcePort);
+    }
 
     console.log("ArtNet::configureUniverse complete", "universeInfo:", universeInfo);
   }
@@ -137,11 +151,22 @@ class ArtNet extends EventEmitter {
     const dataLengthHighByte = (dataLength >> 8) & 0xff;
     const dataLengthLowByte = (dataLength & 0xff);
 
+    let sequenceNumber = 0;
+    if (universeInfo.sendSequenceNumbers) {
+      if (universeInfo.packetSequenceNumber == 255) {
+        universeInfo.packetSequenceNumber = 1;
+      }
+      else {
+        universeInfo.packetSequenceNumber++;
+      }
+      sequenceNumber = universeInfo.packetSequenceNumber;
+    }
+
     const artDmxHeader = [
       65, 114, 116, 45, 78, 101, 116, 0,  // Art-Net 0
       0, 0x50, // Opcode: OpOutput / OpDmx (low byte first)
       0, 14, // protocol version 14 (hight byte first)
-      0, 0,  // sequence and physical origin
+      sequenceNumber, 0,  // sequence and physical origin
       universeLowByte, universeHighByte, // (low byte first)
       dataLengthHighByte, dataLengthLowByte // (high byte first)
     ];
