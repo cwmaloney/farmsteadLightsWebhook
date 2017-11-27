@@ -81,7 +81,7 @@ npm installs packages in the folder "node_modules" withing the project folder.
    * node webHooks.js
 2. Start ngrok
    * Open a terminal or command line window
-   * ngrpk authtoken <look in ngrok UI>
+   * Initially: ngrpk authtoken <look in ngrok UI>
    * ngrok http 8000 -subdomain=farmsteadlighs
    * Copy the hptts forwarding address displayed by ngrok
 3. Open the DialogFlow console
