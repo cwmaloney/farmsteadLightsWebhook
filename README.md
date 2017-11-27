@@ -81,9 +81,8 @@ npm installs packages in the folder "node_modules" withing the project folder.
    * node webHooks.js
 2. Start ngrok
    * Open a terminal or command line window
-   * Initially: ngrpk authtoken <look in ngrok UI>
-   * ngrok http 8000 -subdomain=farmsteadlighs
-   * Copy the hptts forwarding address displayed by ngrok
+   * Do this when you set up a server initially: ngrpk authtoken <look in ngrok UI>
+   * ngrok http 8000 -subdomain=farmsteadlights
 3. Open the DialogFlow console
    * https://www.twilio.com/console/phone-numbers/incoming
    * Click on the phone number
