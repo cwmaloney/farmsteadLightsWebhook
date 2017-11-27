@@ -48,16 +48,16 @@ class ArtNet extends EventEmitter {
     universeInfo.universe = universe;
 
     universeInfo.address = address;
-    universeInfo.enableBroadcast = !!enableBroadcast;
+    universeInfo.enableBroadcast = enableBroadcast;
     universeInfo.port = port;
 
     if (sourcePort) {
       universeInfo.sourcePort = sourcePort;
     }
 
-    universeInfo.sendOnlyChangeData = !!sendOnlyChangeData;
+    universeInfo.sendOnlyChangeData = sendOnlyChangeData;
 
-    universeInfo.sendSequenceNumbers = !!sendSequenceNumbers;
+    universeInfo.sendSequenceNumbers = sendSequenceNumbers;
 
     // see spec page 48; milliseconds
     universeInfo.minMessageInterval = minMessageInterval;

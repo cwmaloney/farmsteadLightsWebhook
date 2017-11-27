@@ -21,10 +21,11 @@ const testChannelData = [
 
 const artnet = new ArtNet();
 
-const universe = 1;
+const universe = 0;
 const configuration = { "universe": universe,
-                        "address": "192.168.1.148",
+                        "address": "10.0.0.18",
                         "sourcePort": 6454,
+                        "sendOnlyChangeData": false,
                         "refreshInterval": 1000 };
 artnet.configureUniverse(configuration);
 

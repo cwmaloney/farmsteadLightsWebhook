@@ -40,8 +40,8 @@ function getSessionData(request) {
 //////////////////////////////////////////////////////////////////////////////
 
 const artnet = new ArtNet();
-const universe = 1;
-const configuration = { "universe": universe, "address": "192.168.1.148" };
+const universe = 0;
+const configuration = { "universe": universe, "address": "10.0.0.18" };
 artnet.configureUniverse(configuration);
 
 //////////////////////////////////////////////////////////////////////////////
@@ -49,8 +49,7 @@ artnet.configureUniverse(configuration);
 //////////////////////////////////////////////////////////////////////////////
 
 const elementNameToChannelMap = {
-  cheer: 1,
-  tree: 16,
+  tree: 1,
   poles: 32,
   fence: 48,
   elf: 64
@@ -60,26 +59,32 @@ const elementCountMap = {
   tree: 10
 };
 
-const teamNameToChannelDataMap = {
-  Chiefs: 1,
-  Royals: 2,
-  Sporting: 3,
-  snow: 4,
-  Santa: 5,
-  USA: 6
+const teamNameToColorsMap = {
+  chiefs: [ 'red', 'red', 'yellow', 'red', 'red', 'red', 'red', 'yellow', 'red', 'red'],
+  royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+  sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
+    'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
+  snow: [ 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white'],
+  santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
+  usa: [ 'red', 'white', 'blue', 'red', 'white', 'blue', 'red', 'white', 'blue', 'black' ],
+  rainbow: [ 'red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'black', 'black', 'black']
 };
 
 const colorNameToChannelDataMap = {
-  off: 0,
-  black: 0,
-  red: 1,
-  green: 3,
-  blue: 2,
-  white: 10,
-  yellow: 11,
-  pink: 12,
-  purple: 13,
-  orange: 15
+  off:  [ 0, 0, 0 ],
+  black: [ 0, 0, 0 ],
+  red: [ 255, 0, 0 ],
+  green:[ 0, 255, 0 ],
+  blue: [ 0, 0, 255 ],
+  white: [ 255, 255, 255 ],
+  yellow: [ 255, 255, 0 ],
+  pink: [ 255, 102, 178 ],
+  purple: [ 102, 0, 102 ],
+  orange: [ 255, 128, 0 ],
+  sportingBlue: [ 147, 177, 215 ],
+  darkIndigo: [ 0, 42, 92],
+  indigo: [ 75, 0, 130 ],
+  violet: [ 148, 0, 211] 
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -231,21 +236,21 @@ function sendSuggestions(request, response, categoryName) {
 
 function setElementColor(request, response) {
   const elementName = request.parameters.elementName;
-  if (!elementName || elementName == null) {
+  if (elementName === undefined || elementName == null) {
     console.error('webhook::setElementColor - missing elementName');
     fillResponse(request, response,
       `Oh - I am tired. I forget the element name. Please try again later`);
     return;
   }  
   const elementChannelNumber = elementNameToChannelMap[elementName];
-  if (!elementChannelNumber) {
+  if (elementChannelNumber === undefined || elementChannelNumber === null) {
     fillResponse(request, response,
       `I don't have ${elementName}. Sorry!`);
     return;
   }
 
   let elementNumber = request.parameters.elementNumber;
-  if (!elementNumber || elementNumber == null) {
+  if (elementNumber === undefined || elementNumber == null) {
     elementNumber = 1;
   }
   const elementCount = elementCountMap[elementName];
@@ -258,20 +263,20 @@ function setElementColor(request, response) {
   }
   
   const colorName = request.parameters.colorName;
-  if (!colorName || colorName == null) {
+  if (colorName === undefined || colorName == null) {
     console.error('webhook::setElementColor - missing colorName');
     fillResponse(request, response,
       `Oh - I am tired. I forget the color name. Please try again later`);
     return;
   }
   const colorChannelData = colorNameToChannelDataMap[colorName];
-  if (!colorChannelData) {
+  if (colorChannelData === undefined) {
     fillResponse(request, response,
       `I don't know color ${colorName}. Sorry!`);
     return;
   }
 
-  artnet.setChannelData(universe, elementChannelNumber + elementNumber - 1, colorName);
+  artnet.setChannelData(universe, elementChannelNumber + 3*(elementNumber - 1), colorChannelData);
   artnet.send(universe);
 
   let message = (!elementNumber)
@@ -282,22 +287,31 @@ function setElementColor(request, response) {
 }
 
 function cheer(request, response) {
-  const teamName = request.parameters.teamName;
-  if (!teamName || teamName == null) {
+  let teamName = request.parameters.teamName;
+  if (teamName === undefined || teamName == null) {
     console.error('webhook::cheer - missing teamName');
     fillResponse(request, response,
       `Oh - I am tired forget the team name. Please try again later`);
     return;
   }
+  teamName = teamName.toLowerCase();
   
-  const teamChannelData = teamNameToChannelDataMap[teamName];
-  if (!teamChannelData) {
+  const colorNames = teamNameToColorsMap[teamName];
+  if (!colorNames || colorNames == null) {
     fillResponse(request, response,
-      `I don't know team ${teamName}. Sorry. Try Go Santa!`);
+      `I don't have ${teamName}. Sorry!`);
     return;
   }
-
-  artnet.setChannelData(universe, elementNameToChannelMap.cheer, teamChannelData);
+  for (let index = 0; index < colorNames.length; index++) {
+    const colorName = colorNames[index];
+    const colorChannelData = colorNameToChannelDataMap[colorName];
+    if (colorChannelData === undefined) {
+      fillResponse(request, response,
+        `I don't know color ${colorName}. Sorry!`);
+      return;
+    }
+    artnet.setChannelData(universe, elementNameToChannelMap.tree + (3*index), colorChannelData);
+  }
   artnet.send(universe);
 
   fillResponse(request, response, `Go ${teamName}! Watch the trees cheer with you!`);
