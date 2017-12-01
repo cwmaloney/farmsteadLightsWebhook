@@ -56,9 +56,9 @@ Ngrok provides proxy and reverser proxy for servers that do not have public endp
    * Unzip the installer and copy the app into your Applications Folder
    * cd /usr/local/bin
    * sudo su -
-   * ln -s /Applications/ngrok ngrok (I can't get this to work... permissions?... using /Applicaitons/ngrok)
+   * ln -s /Applications/ngrok ngrok (I can't get this to work - permissions? I am using /Applicaitons/ngrok)
 4. For Windows:
-   *  Unzip the and put it in a folder referenced by our PATH environment variable - or -
+   * Unzip the and put it in a folder referenced by our PATH environment variable - or -
    * Recommended: create C:\Program Files\ngrok; copy ngroke.exe to the folder; add the folder to system PATH environment variable
 5. <https://ngrok.com/docs/2> is very helpful.
 6. To verify installation, start a new terminal/command window, run: ngrok version
@@ -75,21 +75,21 @@ npm installs packages in the folder "node_modules" withing the project folder.
    * npm install
 
 ## Running the service
-1. Start the service
-   * Open a terminal or command line window
-   * "cd" to project folder
-   * node webHooks.js
-2. Start ngrok
-   * Open a terminal or command line window
-   * Do this when you set up a server initially: ngrpk authtoken <look in ngrok UI>
-   * ngrok http 8000 -subdomain=farmsteadlights
-3. Open the DialogFlow console
-   * https://www.twilio.com/console/phone-numbers/incoming
-   * Click on the phone number
-   * Put the ngrok forwarding address ** plus /??? ** (e.g. https://abcdef123.ngrok.io/sms) into the
-   webhook address.
+1. Optional - Update the software from github.com
+ * Open a terminal or command line window
+ * cd to project folder
+ * git pull
+2. Start the service
+ * Open a terminal or command line window
+ * cd to project folder
+ * node webHooks.js
+3. Start ngrok
+ * Open a terminal or command line window
+ * First timed you run ngrok on the server: ngrok authtoken <auth token from ngrok UI>
+ * ngrok http 8000 -subdomain=farmsteadlights
 4. Test the service
-   * TBD
+ * Open status page in a browser https://farmsteadlights.ngrok.io/status
+ * Open farmstead.com - try "Go Santa"
 
 ## Editing and Debugging using VS Code
 1. In VS Code, open the project folder (File/Open)
