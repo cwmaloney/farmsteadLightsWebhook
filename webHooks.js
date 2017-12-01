@@ -66,25 +66,33 @@ const teamNameToColorsMap = {
     'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
   snow: [ 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white'],
   santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
-  usa: [ 'red', 'white', 'blue', 'red', 'white', 'blue', 'red', 'white', 'blue', 'black' ],
-  rainbow: [ 'red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'black', 'black', 'black']
+  usa: [ 'red', 'red', 'white', 'white', 'blue', 'blue', 'white', 'white', 'red', 'red' ],
+  rainbow: [ 'darkRed', 'red', 'orange', 'yellow', 'green', 'blue', 'navy', 'indigo', 'violet', 'darkViolet']
 };
 
 const colorNameToChannelDataMap = {
   off:  [ 0, 0, 0 ],
   black: [ 0, 0, 0 ],
   red: [ 255, 0, 0 ],
+  darkRed: [139, 0, 0],
+  orangeRed: [255, 69, 0],
   green:[ 0, 255, 0 ],
   blue: [ 0, 0, 255 ],
+  darkBlue: [ 0, 0, 139],
+  navy: [0, 0, 128],
   white: [ 255, 255, 255 ],
   yellow: [ 255, 255, 0 ],
   pink: [ 255, 102, 178 ],
   purple: [ 102, 0, 102 ],
-  orange: [ 255, 128, 0 ],
+  orange: [ 255, 165, 0 ],
   sportingBlue: [ 147, 177, 215 ],
-  darkIndigo: [ 0, 42, 92],
   indigo: [ 75, 0, 130 ],
-  violet: [ 148, 0, 211] 
+  darkIndigo: [ 0, 42, 92],
+  violet: [ 238, 130, 238],
+  darkViolet: [148, 0, 211],
+  magenta: [ 255, 0, 255],
+  cyan: [ 0, 255, 255],
+  brown: [ 165, 42, 42]
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -492,8 +500,9 @@ function fillResponse(request, response, responsePackage) {
   }
   // if the web hook does not set output context, use the context
   // configured in intent
-  if (formattedResponse.outputContexts === undefined
-        || formattedResponse.outputContexts == null) {
+  if ((formattedResponse.outputContexts === undefined
+        || formattedResponse.outputContexts === null)
+       && request.contexts !== undefined) {
     formattedResponse.outputContexts = request.contexts;
   }
 
@@ -514,7 +523,7 @@ server.use(bodyParser.json());
 
 server.post('/webhook', function(request, response) {
   try {
-    console.log('webhook post', 'headers', request.headers, 'body', request.body);
+    console.log('webhook post', 'body', request.body);
 
     if (request.body.queryResult) {
       processV2Request(request, response);
