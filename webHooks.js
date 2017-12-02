@@ -60,6 +60,7 @@ const elementCountMap = {
 };
 
 const teamNameToColorsMap = {
+  huskies: [ 'purple', 'black', 'purple', 'white', 'purple', 'purple', 'white', 'purple', 'black', 'purple' ],
   chiefs: [ 'red', 'red', 'yellow', 'red', 'red', 'red', 'red', 'yellow', 'red', 'red'],
   royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
   sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
