@@ -69,8 +69,8 @@ const teamNameToColorsMap = {
   Snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
   Santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
   USA: [ 'red', 'red', 'white', 'white', 'blue', 'blue', 'white', 'white', 'red', 'red' ],
-  Rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'lime',
-             'green', 'blue', 'darkIndigo', 'violet', 'darkViolet'],
+  Rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'green',
+             'darkGreen', 'blue', 'darkIndigo', 'violet', 'darkViolet'],
   Jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
   Wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
               'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
@@ -313,6 +313,52 @@ function setElementColor(request, response) {
   fillResponse(request, response, message);    
 }
 
+function setAllElementColors(request, response) {
+  const elementName = request.parameters.elementName;
+  if (elementName === undefined || elementName == null) {
+    console.error('webhook::setElementColor - missing elementName');
+    fillResponse(request, response,
+      `Oh - I am tired. I forget the element name. Please try again later`);
+    return;
+  }  
+  const elementChannelNumber = elementNameToChannelMap[elementName];
+  if (elementChannelNumber === undefined || elementChannelNumber === null) {
+    fillResponse(request, response,
+      `I don't have ${elementName}. Sorry!`);
+    return;
+  }
+
+  const elementCount = elementCountMap[elementName];
+  
+  const colorName = request.parameters.colorNames;
+  if (colorNames === undefined || colorNames == null) {
+    console.error('webhook::setElementColors - missing colorNames');
+    fillResponse(request, response,
+      `Oh - I am tired. I forget the color names. Please try again later`);
+    return;
+  }
+
+  let colorIndex=-1;
+  for (let elementIndex = 0; elementIndex < elementCount; elementIndex++) {}
+    if (++colorIndex === colorNames.size) {
+      colorIndex = 0;
+    let colorName = colornames[colorIndex];
+    const colorChannelData = colorNameToChannelDataMap[colorName];
+    if (colorChannelData === undefined) {
+      fillResponse(request, response,
+        `I don't know color ${colorName}. Sorry!`);
+     return;
+    }
+
+    artnet.setChannelData(universe, elementChannelNumber + 3*(elementNumber - 1), colorChannelData);
+    artnet.send(universe);
+  }
+
+  let message = `Changing the colors of ${elementName}. Happy Holidays!`;
+
+  fillResponse(request, response, message);    
+}
+
 function cheer(request, response) {
   let teamName = request.parameters.teamName;
   if (teamName === undefined || teamName == null) {
@@ -402,6 +448,8 @@ const actionHandlers = {
 
   'set.element.color': setElementColor,
 
+  'set.all.element.colors': setAllElementColors,
+  
   'get.random.fact' : getRandomFact,
 
   'check.webhook.status': (request, response) => {
