@@ -60,7 +60,8 @@ const elementCountMap = {
 };
 
 const teamNameToColorsMap = {
-  huskies: [ 'purple', 'black', 'purple', 'white', 'purple', 'purple', 'white', 'purple', 'black', 'purple' ],
+  huskies: [ 'purple', 'black', 'purple', 'white', 'purple',
+             'purple', 'white', 'purple', 'black', 'purple' ],
   chiefs: [ 'red', 'red', 'yellow', 'red', 'red', 'red', 'red', 'yellow', 'red', 'red'],
   royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
   sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
@@ -75,7 +76,9 @@ const teamNameToColorsMap = {
               'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
   tigers: [ 'gold', 'gold', 'gold', 'black', 'gold', 'gold', 'black', 'gold', 'gold', 'gold'],
   hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
-           'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue']
+           'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue'],
+  Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
+              'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ]
 };
 
 const colorNameToChannelDataMap = {
