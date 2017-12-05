@@ -73,7 +73,7 @@ const teamNameToColorsMap = {
   jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
   wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
               'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
-  tigers: [ 'gold', 'gold', 'black', 'black', 'gold', 'gold', 'black', 'black', 'gold', 'gold'],
+  tigers: [ 'gold', 'gold', 'gold', 'black', 'gold', 'gold', 'black', 'gold', 'gold', 'gold'],
   hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
            'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue']
 };
