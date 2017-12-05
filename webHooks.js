@@ -75,7 +75,7 @@ const teamNameToColorsMap = {
               'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
   tigers: [ 'gold', 'gold', 'black', 'black', 'gold', 'gold', 'black', 'black', 'gold', 'gold'],
   hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
-            'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue']
+           'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue']
 };
 
 const colorNameToChannelDataMap = {
@@ -84,6 +84,7 @@ const colorNameToChannelDataMap = {
   red: [ 255, 0, 0 ],
   darkRed: [139, 0, 0],
   orangeRed: [255, 69, 0],
+  lime: [0, 255, 255],
   green:[ 0, 128, 0 ],
   darkGreen: [ 0, 100, 0 ],
   blue: [ 0, 0, 255 ],
@@ -91,6 +92,7 @@ const colorNameToChannelDataMap = {
   royalBlue: [ 65, 105, 225],
   navy: [0, 0, 128],
   white: [ 255, 255, 255 ],
+  snow: [ 255, 250, 250 ],
   yellow: [ 255, 255, 0 ],
   pink: [ 255, 102, 178 ],
   purple: [ 102, 0, 102 ],
@@ -106,9 +108,7 @@ const colorNameToChannelDataMap = {
   brown: [ 165, 42, 42],
   gold: [ 255, 215, 0],
   silver: [ 192, 192, 192],
-  teal: [ 0, 128, 128],
-  lime: [0, 255, 255],
-  snow: [ 255, 250, 250 ]
+  teal: [ 0, 128, 128]
 };
 
 //////////////////////////////////////////////////////////////////////////////
