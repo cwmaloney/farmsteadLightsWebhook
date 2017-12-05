@@ -70,26 +70,26 @@ The npm (node package manager) will install the JavaScript packages (libraries) 
 npm installs packages in the folder "node_modules" withing the project folder.
 
 1. Install:
-   * Open a terminal or command line window
-   * "cd" to project folder
-   * npm install
+     * Open a terminal or command line window
+     * "cd" to project folder
+     * npm install
 
-## Running the service
+## Running the web hook server
 1. Optional - Update the software from github.com
- * Open a terminal or command line window
- * cd to project folder
- * git pull
+    * Open a terminal or command line window
+    * cd to project folder
+    * git pull
 2. Start the service
- * Open a terminal or command line window
- * cd to project folder
- * node webHooks.js
+    * Open a terminal or command line window
+    * cd to project folder
+    * node webHooks.js
 3. Start ngrok
- * Open a terminal or command line window
- * First timed you run ngrok on the server: ngrok authtoken <auth token from ngrok UI>
- * ngrok http 8000 -subdomain=farmsteadlights
+    * Open a terminal or command line window
+    * First timed you run ngrok on the server: ngrok authtoken <auth token from ngrok UI>
+    * ngrok http 8000 -subdomain=farmsteadlights
 4. Test the service
- * Open status page in a browser https://farmsteadlights.ngrok.io/status
- * Open farmstead.com - try "Go Santa"
+    * Open status page in a browser https://farmsteadlights.ngrok.io/status
+    * Open farmstead.com - try "Go Santa"
 
 ## Editing and Debugging using VS Code
 1. In VS Code, open the project folder (File/Open)

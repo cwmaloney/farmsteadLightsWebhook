@@ -65,10 +65,17 @@ const teamNameToColorsMap = {
   royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
   sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
     'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
-  snow: [ 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white', 'white'],
+  snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
   santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
   usa: [ 'red', 'red', 'white', 'white', 'blue', 'blue', 'white', 'white', 'red', 'red' ],
-  rainbow: [ 'darkRed', 'red', 'orange', 'yellow', 'green', 'blue', 'navy', 'indigo', 'violet', 'darkViolet']
+  rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'lime',
+             'green', 'blue', 'darkIndigo', 'violet', 'darkViolet'],
+  jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
+  wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
+              'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
+  tigers: [ 'gold', 'gold', 'black', 'black', 'gold', 'gold', 'black', 'black', 'gold', 'gold'],
+  hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
+            'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue']
 };
 
 const colorNameToChannelDataMap = {
@@ -77,15 +84,18 @@ const colorNameToChannelDataMap = {
   red: [ 255, 0, 0 ],
   darkRed: [139, 0, 0],
   orangeRed: [255, 69, 0],
-  green:[ 0, 255, 0 ],
+  green:[ 0, 128, 0 ],
+  darkGreen: [ 0, 100, 0 ],
   blue: [ 0, 0, 255 ],
   darkBlue: [ 0, 0, 139],
+  royalBlue: [ 65, 105, 225],
   navy: [0, 0, 128],
   white: [ 255, 255, 255 ],
   yellow: [ 255, 255, 0 ],
   pink: [ 255, 102, 178 ],
   purple: [ 102, 0, 102 ],
-  orange: [ 255, 165, 0 ],
+  royalPurple: [ 102, 51, 153 ],
+  orange: [ 255, 128, 0 ],
   sportingBlue: [ 147, 177, 215 ],
   indigo: [ 75, 0, 130 ],
   darkIndigo: [ 0, 42, 92],
@@ -93,7 +103,12 @@ const colorNameToChannelDataMap = {
   darkViolet: [148, 0, 211],
   magenta: [ 255, 0, 255],
   cyan: [ 0, 255, 255],
-  brown: [ 165, 42, 42]
+  brown: [ 165, 42, 42],
+  gold: [ 255, 215, 0],
+  silver: [ 192, 192, 192],
+  teal: [ 0, 128, 128],
+  lime: [0, 255, 255],
+  snow: [ 255, 250, 250 ]
 };
 
 //////////////////////////////////////////////////////////////////////////////
