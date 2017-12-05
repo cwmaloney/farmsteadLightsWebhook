@@ -60,22 +60,22 @@ const elementCountMap = {
 };
 
 const teamNameToColorsMap = {
-  huskies: [ 'purple', 'black', 'purple', 'white', 'purple',
+  Huskies: [ 'purple', 'black', 'purple', 'white', 'purple',
              'purple', 'white', 'purple', 'black', 'purple' ],
-  chiefs: [ 'red', 'red', 'yellow', 'red', 'red', 'red', 'red', 'yellow', 'red', 'red'],
-  royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
-  sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
+  Chiefs: [ 'red', 'red', 'yellow', 'red', 'red', 'red', 'red', 'yellow', 'red', 'red'],
+  Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+  Sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
     'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
-  snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
-  santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
-  usa: [ 'red', 'red', 'white', 'white', 'blue', 'blue', 'white', 'white', 'red', 'red' ],
-  rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'lime',
+  Snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
+  Santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
+  USA: [ 'red', 'red', 'white', 'white', 'blue', 'blue', 'white', 'white', 'red', 'red' ],
+  Rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'lime',
              'green', 'blue', 'darkIndigo', 'violet', 'darkViolet'],
-  jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
-  wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
+  Jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
+  Wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
               'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
-  tigers: [ 'gold', 'gold', 'gold', 'black', 'gold', 'gold', 'black', 'gold', 'gold', 'gold'],
-  hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
+  Tigers: [ 'gold', 'gold', 'gold', 'black', 'gold', 'gold', 'black', 'gold', 'gold', 'gold'],
+  Hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
            'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue'],
   Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
               'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ]
@@ -321,7 +321,7 @@ function cheer(request, response) {
       `Oh - I am tired forget the team name. Please try again later`);
     return;
   }
-  teamName = teamName.toLowerCase();
+  // teamName = teamName.toLowerCase();
   
   const colorNames = teamNameToColorsMap[teamName];
   if (!colorNames || colorNames == null) {
