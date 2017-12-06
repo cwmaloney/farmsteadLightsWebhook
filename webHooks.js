@@ -50,13 +50,15 @@ artnet.configureUniverse(configuration);
 
 const elementNameToChannelMap = {
   tree: 1,
+  trees: 1,
   poles: 32,
   fence: 48,
   elf: 64
 };
 
 const elementCountMap = {
-  tree: 10
+  tree: 10,
+  trees: 10
 };
 
 const teamNameToColorsMap = {
@@ -78,7 +80,9 @@ const teamNameToColorsMap = {
   Hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
            'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue'],
   Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
-              'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ]
+              'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
+  Grinch: [ 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen',
+            'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen' ]
 };
 
 const colorNameToChannelDataMap = {
@@ -90,11 +94,13 @@ const colorNameToChannelDataMap = {
   lime: [0, 255, 255],
   green:[ 0, 128, 0 ],
   darkGreen: [ 0, 100, 0 ],
+  grinchGreen: [ 134, 125, 34 ],
   blue: [ 0, 0, 255 ],
   darkBlue: [ 0, 0, 139],
   royalBlue: [ 65, 105, 225],
   navy: [0, 0, 128],
   white: [ 255, 255, 255 ],
+  on: [ 255, 255, 255 ],
   snow: [ 255, 250, 250 ],
   yellow: [ 255, 255, 0 ],
   pink: [ 255, 102, 178 ],
@@ -314,23 +320,28 @@ function setElementColor(request, response) {
 }
 
 function setAllElementColors(request, response) {
+  console.log("setAllElementColors");
   const elementName = request.parameters.elementName;
   if (elementName === undefined || elementName == null) {
     console.error('webhook::setElementColor - missing elementName');
     fillResponse(request, response,
       `Oh - I am tired. I forget the element name. Please try again later`);
     return;
-  }  
+  }
+  console.log("setAllElementColors, elementName" + elementName);  
   const elementChannelNumber = elementNameToChannelMap[elementName];
   if (elementChannelNumber === undefined || elementChannelNumber === null) {
     fillResponse(request, response,
       `I don't have ${elementName}. Sorry!`);
     return;
   }
-
-  const elementCount = elementCountMap[elementName];
+  // console.log("setAllElementColors, elementChannelNumber=" + elementChannelNumber);  
   
-  const colorName = request.parameters.colorNames;
+  const elementCount = elementCountMap[elementName];
+  // console.log("setAllElementColors, elementCount=" + elementCount);  
+  
+  const colorNames = request.parameters.colorNames;
+  console.log("setAllElementColors, colorNames=", colorNames);  
   if (colorNames === undefined || colorNames == null) {
     console.error('webhook::setElementColors - missing colorNames');
     fillResponse(request, response,
@@ -338,19 +349,31 @@ function setAllElementColors(request, response) {
     return;
   }
 
-  let colorIndex=-1;
-  for (let elementIndex = 0; elementIndex < elementCount; elementIndex++) {}
-    if (++colorIndex === colorNames.size) {
-      colorIndex = 0;
-    let colorName = colornames[colorIndex];
+  let colorIndex = -1;
+  let colorName = 'black';
+  if (!Array.isArray(colorNames)) {
+    colorName = colorNames;
+  }
+  for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
+    if (Array.isArray(colorNames)) {
+      colorIndex++;
+      if (colorIndex === colorNames.length) {
+        colorIndex = 0;
+      }
+      console.log("setAllElementColors, colorIndex=", colorIndex);
+      colorName = colorNames[colorIndex];
+    }
+
+    console.log("setAllElementColors, colorName=", colorName);  
     const colorChannelData = colorNameToChannelDataMap[colorName];
+    // console.log("setAllElementColors, colorChannelData=", colorChannelData);  
     if (colorChannelData === undefined) {
       fillResponse(request, response,
         `I don't know color ${colorName}. Sorry!`);
      return;
     }
 
-    artnet.setChannelData(universe, elementChannelNumber + 3*(elementNumber - 1), colorChannelData);
+    artnet.setChannelData(universe, elementChannelNumber + 3*(elementIndex - 1), colorChannelData);
     artnet.send(universe);
   }
 
@@ -515,7 +538,7 @@ function processV2Request (request, response) {
       sessionDataCache[session] = sessionData;
     }
 
-    if (sessionDataCache.size > maxSessionCount) {
+    if (sessionDataCache.length > maxSessionCount) {
       // delete oldest session
       let toDelete = undefined;
       sessionDataCache.forEach((value, key) =>
