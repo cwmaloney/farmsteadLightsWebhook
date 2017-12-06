@@ -320,7 +320,7 @@ function setElementColor(request, response) {
 }
 
 function setAllElementColors(request, response) {
-  console.log("setAllElementColors");
+  // console.log("setAllElementColors");
   const elementName = request.parameters.elementName;
   if (elementName === undefined || elementName == null) {
     console.error('webhook::setElementColor - missing elementName');
@@ -328,7 +328,7 @@ function setAllElementColors(request, response) {
       `Oh - I am tired. I forget the element name. Please try again later`);
     return;
   }
-  console.log("setAllElementColors, elementName" + elementName);  
+  // console.log("setAllElementColors, elementName" + elementName);  
   const elementChannelNumber = elementNameToChannelMap[elementName];
   if (elementChannelNumber === undefined || elementChannelNumber === null) {
     fillResponse(request, response,
@@ -360,11 +360,11 @@ function setAllElementColors(request, response) {
       if (colorIndex === colorNames.length) {
         colorIndex = 0;
       }
-      console.log("setAllElementColors, colorIndex=", colorIndex);
+      // console.log("setAllElementColors, colorIndex=", colorIndex);
       colorName = colorNames[colorIndex];
     }
 
-    console.log("setAllElementColors, colorName=", colorName);  
+    // console.log("setAllElementColors, colorName=", colorName);  
     const colorChannelData = colorNameToChannelDataMap[colorName];
     // console.log("setAllElementColors, colorChannelData=", colorChannelData);  
     if (colorChannelData === undefined) {
