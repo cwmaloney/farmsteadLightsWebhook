@@ -388,8 +388,8 @@ function setAllElementColors(request, response) {
     }
 
     artnet.setChannelData(universe, elementChannelNumber + 3*(elementIndex - 1), colorChannelData);
-    artnet.send(universe);
   }
+  artnet.send(universe);
 
   let message = `Changing the colors of ${elementName}. Happy Holidays!`;
 
