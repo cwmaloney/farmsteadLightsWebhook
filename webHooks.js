@@ -101,7 +101,8 @@ const teamNameToColorsMap = {
   Falcons: [ 'blue', 'gold', 'gold', 'gold', 'blue',
                'blue', 'gold', 'gold', 'gold', 'blue'],
   Halloween: [ 'orange', 'orange', 'black', 'black', 'orange',
-               'orange', 'black', 'black', 'orange', 'orange']
+               'orange', 'black', 'black', 'orange', 'orange'],
+  Nebraska: [ 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', ]
 };
 
 const colorNameToChannelDataMap = {
