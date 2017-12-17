@@ -460,19 +460,7 @@ function setAllElementColorsByRgb(request, response) {
       return;
       }
   }
-  let blue = request.parameters.red;
-  if (blue === undefined || blue == null) {
-    console.error('webhook::setAllElementColorByRGB - missing blue');
-    fillResponse(request, response, `*** missing blue ***`);
-    return;
-  } else {
-    if (blue < 0 || blue > 255) {
-      console.error('webhook::setAllElementColorByRGB - blue must be 0 to 255');
-      fillResponse(request, response, `*** blue must be 0 to 255 ***`);
-      return;
-      }
-  }
-  let green = request.parameters.red;
+  let green = request.parameters.green;
   if (green === undefined || green == null) {
     console.error('webhook::setAllElementColorByRGB - missing green');
     fillResponse(request, response, `*** missing green ***`);
@@ -484,18 +472,22 @@ function setAllElementColorsByRgb(request, response) {
       return;
       }
   }
+  let blue = request.parameters.blue;
+  if (blue === undefined || blue == null) {
+    console.error('webhook::setAllElementColorByRGB - missing blue');
+    fillResponse(request, response, `*** missing blue ***`);
+    return;
+  } else {
+    if (blue < 0 || blue > 255) {
+      console.error('webhook::setAllElementColorByRGB - blue must be 0 to 255');
+      fillResponse(request, response, `*** blue must be 0 to 255 ***`);
+      return;
+      }
+  }
+
   const rgb = [ red, blue, green ];
 
   for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
-    if (Array.isArray(colorNames)) {
-      colorIndex++;
-      if (colorIndex === colorNames.length) {
-        colorIndex = 0;
-      }
-      // console.log("setAllElementColors, colorIndex=", colorIndex);
-      colorName = colorNames[colorIndex];
-    }
-
     artnet.setChannelData(universe, elementChannelNumber + 3*(elementIndex - 1), rgb);
   }
   artnet.send(universe);
@@ -596,7 +588,7 @@ const actionHandlers = {
 
   'set.all.element.colors': setAllElementColors,
 
-  'set.all.element.colorsByRgb': setAllElementColorsByRgb,
+  'set.all.element.colors.rgb': setAllElementColorsByRgb,
   
   'get.random.fact' : getRandomFact,
 
