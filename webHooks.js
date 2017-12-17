@@ -32,7 +32,8 @@ const maxSessionCount = 100;
 let sessionCounter = 0;
 
 function getSessionData(request) {
-  return sessionDataCache[request.session];
+  console.log(`getSessionData: session=${request.session} data=${sessionDataCache[request.session]}`)
+    return sessionDataCache[request.session];
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -62,94 +63,105 @@ const elementCountMap = {
 };
 
 const teamNameToColorsMap = {
-  Huskies: [ 'purple', 'black', 'purple', 'white', 'purple',
-             'purple', 'white', 'purple', 'black', 'purple' ],
   Chiefs: [ 'red', 'red', 'yellow', 'red', 'red', 'red', 'red', 'yellow', 'red', 'red'],
-  Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
-  Sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
-    'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
-  Snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
-  Santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
-  Rudolph: [ 'brown', 'brown', 'brown', 'brown', 'brown',
-             'brown', 'brown', 'brown', 'brown', 'red'],
-  Reindeer: [ 'brown', 'brown', 'brown', 'brown', 'brown',
-              'brown', 'brown', 'brown', 'brown', 'red'],
-  USA: [ 'red', 'red', 'red', 'red', 'white', 'white', 'blue', 'blue', 'blue', 'blue' ],
-  Rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'green',
-             'darkGreen', 'blue', 'darkIndigo', 'violet', 'darkViolet'],
-  Jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
-  Wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
-              'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
-  Tigers: [ 'gold', 'gold', 'gold', 'black', 'gold', 'gold', 'black', 'gold', 'gold', 'gold'],
-  Hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
-           'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue'],
-  Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
-              'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
+  Falcons: [ 'blue', 'gold', 'gold', 'gold', 'blue',
+             'blue', 'gold', 'gold', 'gold', 'blue'],
+  Gorillas: [ 'crimson', 'crimson', 'crimson', 'crimson', 'crimson',
+              'gold', 'gold', 'gold', 'gold', 'gold'],
   Grinch: [ 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen',
             'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen' ],
+  Halloween: [ 'orange', 'orange', 'black', 'black', 'orange',
+               'orange', 'black', 'black', 'orange', 'orange'],
+  Hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
+               'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue'],
+  Huskies: [ 'purple', 'black', 'purple', 'white', 'purple',
+             'purple', 'white', 'purple', 'black', 'purple' ],
+  Jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
   Mavericks: [ 'orange', 'orange', 'orange', 'orange', 'lightBlue',
                'lightBlue', 'orange', 'orange', 'orange', 'orange'],
-  Gorillas: [ 'crimson', 'crimson', 'crimson', 'crimson', 'crimson',
-               'gold', 'gold', 'gold', 'gold', 'gold'],
-  Pioneers: [ 'blue', 'blue', 'blue', 'blue', 'fuschia',
-              'fuschia', 'blue', 'blue', 'blue', 'blue',],
   HornedFrogs: [ 'hornedFrogPurple', 'hornedFrogPurple', 'hornedFrogPurple',
                  'hornedFrogPurple', 'white', 'white', 'hornedFrogPurple',
                  'hornedFrogPurple', 'hornedFrogPurple', 'hornedFrogPurple' ],
   Kangaroos: [ 'blue', 'blue', 'gold', 'gold', 'blue',
                'blue', 'gold', 'gold', 'blue', 'blue'],
-  Falcons: [ 'blue', 'gold', 'gold', 'gold', 'blue',
-               'blue', 'gold', 'gold', 'gold', 'blue'],
-  Halloween: [ 'orange', 'orange', 'black', 'black', 'orange',
-               'orange', 'black', 'black', 'orange', 'orange'],
-  Nebraska: [ 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red' ]
+  Pioneers: [ 'blue', 'blue', 'blue', 'blue', 'fuschia',
+              'fuschia', 'blue', 'blue', 'blue', 'blue',],
+  Nebraska: [ 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red' ],
+  Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
+              'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
+  Rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'green',
+              'darkGreen', 'blue', 'darkIndigo', 'violet', 'darkViolet'],
+  Reindeer: [ 'brown', 'brown', 'brown', 'brown', 'brown',
+              'brown', 'brown', 'brown', 'brown', 'red'],
+  Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+  Rudolph: [ 'brown', 'brown', 'brown', 'brown', 'brown',
+             'brown', 'brown', 'brown', 'brown', 'red'],
+  Santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
+  Sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
+              'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
+  Snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
+  Tigers: [ 'gold', 'gold', 'gold', 'black', 'gold', 'gold', 'black', 'gold', 'gold', 'gold'],
+  USA: [ 'red', 'red', 'red', 'red', 'white', 'white', 'blue', 'blue', 'blue', 'blue' ],
+  Wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
+              'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ]
 };
 
 const colorNameToChannelDataMap = {
-  off:  [ 0, 0, 0 ],
+  on: [ 255, 255, 255 ],
+  white: [ 255, 255, 255 ],
+  snow: [ 225, 225, 225 ],
+  celadon: [ 162, 215, 165 ],
   gray: [ 32, 32, 32 ],
-  black: [ 0, 0, 0 ],
+
   red: [ 255, 0, 0 ],
-  fuschia: [ 191, 13, 62 ],
   crimson: [ 153, 0, 0 ],
   darkRed: [139, 0, 0],
+
+  pink: [ 255, 102, 178 ],
+  maroon: [ 128, 0, 0],
+  fuschia: [ 191, 13, 62 ],
+  magenta: [ 255, 0, 255],
+  
+  orange: [ 255, 128, 0 ],
   orangeRed: [255, 69, 0],
-  lime: [0, 255, 255],
+
+  yellow: [ 255, 255, 0 ],
+  
   green:[ 0, 128, 0 ],
   darkGreen: [ 0, 100, 0 ],
   grinchGreen: [ 40, 190, 0 ],
   olive: [ 128, 128, 0 ],
-  lightBlue: [ 107, 164, 184 ],
+  turquoise: [ 64, 224, 204 ],
+  darkTurquoise: [ 0, 206, 209 ],
+  lime: [0, 255, 255],
+  teal: [ 0, 128, 128],
+  
   blue: [ 0, 0, 255 ],
+  lightBlue: [ 107, 164, 184 ],
+  cornFlowerBlue: [ 80, 129, 217 ],
   darkBlue: [ 0, 0, 139],
   royalBlue: [ 65, 105, 225],
   navy: [0, 0, 110],
-  white: [ 255, 255, 255 ],
-  on: [ 255, 255, 255 ],
-  snow: [ 225, 225, 225 ],
-  yellow: [ 255, 255, 0 ],
-  pink: [ 255, 102, 178 ],
+  sportingBlue: [ 147, 177, 215 ],
+  cyan: [ 0, 255, 255],
+  
+  indigo: [ 55, 0, 130 ],
+  darkIndigo: [ 25, 0, 55 ],
+
+  blueViolet: [ 138, 43, 226 ],
+  
   purple: [ 102, 0, 102 ],
   royalPurple: [ 102, 51, 153 ],
   hornedFrogPurple: [ 77, 25, 121 ],
-  orange: [ 255, 128, 0 ],
-  sportingBlue: [ 147, 177, 215 ],
-  indigo: [ 55, 0, 130 ],
-  darkIndigo: [ 25, 0, 55 ],
-  blueViolet: [ 138, 43, 226 ],
   violet: [ 148, 0, 211 ],
   darkViolet: [ 75, 0, 110 ],
-  magenta: [ 255, 0, 255],
-  cyan: [ 0, 255, 255],
+
   brown: [ 40, 26, 13 ],
   gold: [ 255, 215, 0],
   silver: [ 192, 192, 192],
-  teal: [ 0, 128, 128],
-  maroon: [ 128, 0, 0],
-  turquoise: [ 64, 224, 204 ],
-  darkTurquoise: [ 0, 206, 209 ],
-  cornFlowerBlue: [ 80, 129, 217 ],
-  celadon: [ 172, 225, 175 ]
+
+  black: [ 0, 0, 0 ],
+  off:  [ 0, 0, 0 ]
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -355,7 +367,7 @@ function setAllElementColors(request, response) {
   // console.log("setAllElementColors");
   const elementName = request.parameters.elementName;
   if (elementName === undefined || elementName == null) {
-    console.error('webhook::setElementColor - missing elementName');
+    console.error('webhook::setAllElementColors - missing elementName');
     fillResponse(request, response,
       `Oh - I am tired. I forget the element name. Please try again later`);
     return;
@@ -375,7 +387,7 @@ function setAllElementColors(request, response) {
   const colorNames = request.parameters.colorNames;
   console.log("setAllElementColors, colorNames=", colorNames);  
   if (colorNames === undefined || colorNames == null) {
-    console.error('webhook::setElementColors - missing colorNames');
+    console.error('webhook::setAllElementColors - missing colorNames');
     fillResponse(request, response,
       `Oh - I am tired. I forget the color names. Please try again later`);
     return;
@@ -410,6 +422,85 @@ function setAllElementColors(request, response) {
   artnet.send(universe);
 
   let message = `Changing the colors of ${elementName}. Happy Holidays!`;
+
+  fillResponse(request, response, message);    
+}
+
+
+function setAllElementColorsByRgb(request, response) {
+  // console.log("setAllElementColorByRGB");
+  const elementName = request.parameters.elementName;
+  if (elementName === undefined || elementName == null) {
+    console.error('webhook::setAllElementColorByRGB - missing elementName');
+    fillResponse(request, response,
+      `Oh - I am tired. I forget the element name. Please try again later`);
+    return;
+  }
+  // console.log("setAllElementColorByRGB, elementName" + elementName);  
+  const elementChannelNumber = elementNameToChannelMap[elementName];
+  if (elementChannelNumber === undefined || elementChannelNumber === null) {
+    fillResponse(request, response,
+      `I don't have ${elementName}. Sorry!`);
+    return;
+  }
+  // console.log("setAllElementColorByRGB, elementChannelNumber=" + elementChannelNumber);  
+  
+  const elementCount = elementCountMap[elementName];
+  // console.log("setAllElementColorByRGB, elementCount=" + elementCount);  
+  
+  let red = request.parameters.red;
+  if (red === undefined || red == null) {
+    console.error('webhook::setAllElementColorByRGB - missing red');
+    fillResponse(request, response, `*** missing red ***`);
+    return;
+  } else {
+    if (red < 0 || red > 255) {
+      console.error('webhook::setAllElementColorByRGB - red must be 0 to 255');
+      fillResponse(request, response, `*** red must be 0 to 255 ***`);
+      return;
+      }
+  }
+  let blue = request.parameters.red;
+  if (blue === undefined || blue == null) {
+    console.error('webhook::setAllElementColorByRGB - missing blue');
+    fillResponse(request, response, `*** missing blue ***`);
+    return;
+  } else {
+    if (blue < 0 || blue > 255) {
+      console.error('webhook::setAllElementColorByRGB - blue must be 0 to 255');
+      fillResponse(request, response, `*** blue must be 0 to 255 ***`);
+      return;
+      }
+  }
+  let green = request.parameters.red;
+  if (green === undefined || green == null) {
+    console.error('webhook::setAllElementColorByRGB - missing green');
+    fillResponse(request, response, `*** missing green ***`);
+    return;
+  } else {
+    if (green < 0 || green > 255) {
+      console.error('webhook::setAllElementColorByRGB - green must be 0 to 255');
+      fillResponse(request, response, `*** green must be 0 to 255 ***`);
+      return;
+      }
+  }
+  const rgb = [ red, blue, green ];
+
+  for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
+    if (Array.isArray(colorNames)) {
+      colorIndex++;
+      if (colorIndex === colorNames.length) {
+        colorIndex = 0;
+      }
+      // console.log("setAllElementColors, colorIndex=", colorIndex);
+      colorName = colorNames[colorIndex];
+    }
+
+    artnet.setChannelData(universe, elementChannelNumber + 3*(elementIndex - 1), rgb);
+  }
+  artnet.send(universe);
+
+  let message = `Changing the colors of ${elementName} to ${rgb}.`;
 
   fillResponse(request, response, message);    
 }
@@ -504,29 +595,31 @@ const actionHandlers = {
   'set.element.color': setElementColor,
 
   'set.all.element.colors': setAllElementColors,
+
+  'set.all.element.colorsByRgb': setAllElementColorsByRgb,
   
   'get.random.fact' : getRandomFact,
 
   'check.webhook.status': (request, response) => {
-    fillResponse(request, response, '* The Farmstead Light\'s webhook server is running!');
+    fillResponse(request, response, 'The Farmstead Light\'s webhook server is running!');
   },
 
   // The default welcome intent has been matched, so welcome the user
   // (https://dialogflow.com/docs/events#default_welcome_intent)
   'input.welcome': (request, response) => {
-    fillResponse(request, response, '* Welcome to my Farmstead Lights agent!');
+    fillResponse(request, response, 'Welcome to my Farmstead Lights agent!');
   },
 
   // The default fallback intent has been matched - no matching intent found.
   //  try to recover (https://dialogflow.com/docs/intents#fallback_intents)
   'input.unknown': (request, response) => {
-    fillResponse(request, response, '* I\'m having trouble, can you try that again?');
+    fillResponse(request, response, 'I\'m having trouble, can you try that again?');
   },
 
   // Default handler for unknown or undefined actions
   'default': (request, response) => {
     fillResponse(request, response,
-      '* I am unable to help you now - Sorry.  Please try again later.');
+      'I am unable to help you now - Sorry.  Please try again later.');
   }
 };
 
@@ -568,6 +661,7 @@ function processV2Request (request, response) {
     if (sessionData === undefined) {
       sessionData = { sequence: sessionCounter++, creationTimestamp: new Date() };
       sessionDataCache[session] = sessionData;
+      console.log(`creatingSessionData: session=${request.session}`)
     }
 
     if (sessionDataCache.length > maxSessionCount) {
@@ -576,7 +670,8 @@ function processV2Request (request, response) {
       sessionDataCache.forEach((value, key) =>
         { if (value.sequence < oldest) toDelete = key; } );
       if (toDelete) {
-        sessionDataCache.delte(toDelete);
+        console.log(`removing oldest sessionData: session=${toDelete}`)
+        sessionDataCache.delete(toDelete);
       }
     }
 
