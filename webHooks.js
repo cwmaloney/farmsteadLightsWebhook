@@ -129,7 +129,7 @@ const colorNameToChannelDataMap = {
   yellow: [ 255, 255, 0 ],
   
   green:[ 0, 255, 0 ],
-  darkGreen: [ 0, 60, 0 ],
+  darkGreen: [ 0, 40, 0 ],
   grinchGreen: [ 40, 190, 0 ],
   olive: [ 45, 65, 0 ],
   turquoise: [ 64, 224, 204 ],
@@ -147,11 +147,11 @@ const colorNameToChannelDataMap = {
   cyan: [ 0, 250, 250],
   
   indigo: [ 75, 0, 130 ],
-  darkIndigo: [ 20, 0, 55 ],
+  darkIndigo: [ 10, 0, 26 ],
 
   blueViolet: [ 138, 43, 226 ],
   
-  purple: [ 96, 0, 128 ],
+  purple: [ 75, 0, 128 ],
   royalPurple: [ 102, 51, 153 ],
   hornedFrogPurple: [ 77, 25, 121 ],
   violet: [ 148, 0, 211 ],
