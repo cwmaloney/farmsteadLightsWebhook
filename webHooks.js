@@ -89,8 +89,8 @@ const teamNameToColorsMap = {
   Nebraska: [ 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red' ],
   Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
               'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
-  Rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'green',
-              'darkGreen', 'blue', 'darkIndigo', 'violet', 'darkViolet'],
+  Rainbow: [ 'darkRed', 'red', 'orangeRed', 'orange', 'yellow',
+              'green', 'blue', 'midnightBlue', 'blueViolet', 'darkViolet'],
   Reindeer: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
               'darkBrown', 'darkBrown', 'darkBrown', 'red', 'black'],
   Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
@@ -115,7 +115,7 @@ const colorNameToChannelDataMap = {
 
   red: [ 255, 0, 0 ],
   crimson: [ 220, 20, 60 ],
-  darkRed: [139, 0, 0],
+  darkRed: [40, 0, 0],
 
   pink: [ 255, 102, 178 ],
   darkPink: [ 175, 75, 140 ],
@@ -127,6 +127,8 @@ const colorNameToChannelDataMap = {
   orangeRed: [255, 69, 0],
 
   yellow: [ 255, 255, 0 ],
+
+  yellowGreen: [ 154, 205, 50 ],
   
   green:[ 0, 255, 0 ],
   darkGreen: [ 0, 30, 0 ],
@@ -143,6 +145,7 @@ const colorNameToChannelDataMap = {
   darkBlue: [ 0, 0, 50],
   royalBlue: [ 65, 105, 225],
   navy: [0, 0, 25],
+  midnightBlue: [ 25, 25, 112 ],
   sportingBlue: [ 147, 177, 215 ],
   cyan: [ 0, 250, 250],
   
@@ -155,7 +158,7 @@ const colorNameToChannelDataMap = {
   royalPurple: [ 102, 51, 153 ],
   hornedFrogPurple: [ 77, 25, 121 ],
   violet: [ 148, 0, 211 ],
-  darkViolet: [ 60, 0, 90 ],
+  darkViolet: [ 42, 0, 135 ],
 
   brown: [ 32, 20, 11 ],
   darkBrown: [ 20, 13, 5 ],
