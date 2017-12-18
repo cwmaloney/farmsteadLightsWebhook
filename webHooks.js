@@ -31,9 +31,9 @@ const sessionDataCache = new Map();
 const maxSessionCount = 100;
 let sessionCounter = 0;
 
-function getSessionData(request) {
-  console.log(`getSessionData: session=${request.session} data=${sessionDataCache[request.session]}`)
-    return sessionDataCache[request.session];
+function getSessionData(session) {
+  console.log(`getSessionData: session=${session} data=${sessionDataCache[session]}`)
+    return sessionDataCache[session];
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -91,11 +91,11 @@ const teamNameToColorsMap = {
               'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
   Rainbow: [ 'red', 'orangeRed', 'orange', 'yellow', 'green',
               'darkGreen', 'blue', 'darkIndigo', 'violet', 'darkViolet'],
-  Reindeer: [ 'brown', 'brown', 'brown', 'brown', 'brown',
-              'brown', 'brown', 'brown', 'brown', 'red'],
+  Reindeer: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
+              'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'red'],
   Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
-  Rudolph: [ 'brown', 'brown', 'brown', 'brown', 'brown',
-             'brown', 'brown', 'brown', 'brown', 'red'],
+  Rudolph: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
+             'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'red'],
   Santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
   Sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
               'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
@@ -114,51 +114,53 @@ const colorNameToChannelDataMap = {
   gray: [ 32, 32, 32 ],
 
   red: [ 255, 0, 0 ],
-  crimson: [ 153, 0, 0 ],
+  crimson: [ 220, 20, 60 ],
   darkRed: [139, 0, 0],
 
   pink: [ 255, 102, 178 ],
+  darkPink: [ 175, 75, 140 ],
   maroon: [ 128, 0, 0],
-  fuschia: [ 191, 13, 62 ],
-  magenta: [ 255, 0, 255],
+  fuchsia: [ 255, 0, 255 ],
+  magenta: [ 255, 0, 255 ],
   
-  orange: [ 255, 128, 0 ],
+  orange: [ 255, 127, 0 ],
   orangeRed: [255, 69, 0],
 
   yellow: [ 255, 255, 0 ],
   
-  green:[ 0, 128, 0 ],
+  green:[ 0, 255, 0 ],
   darkGreen: [ 0, 100, 0 ],
   grinchGreen: [ 40, 190, 0 ],
   olive: [ 128, 128, 0 ],
   turquoise: [ 64, 224, 204 ],
   darkTurquoise: [ 0, 206, 209 ],
-  lime: [0, 255, 255],
+  lime: [127, 255, 0],
   teal: [ 0, 128, 128],
   
   blue: [ 0, 0, 255 ],
   lightBlue: [ 107, 164, 184 ],
-  cornFlowerBlue: [ 80, 129, 217 ],
-  darkBlue: [ 0, 0, 139],
+  cornFlowerBlue: [ 70, 119, 207 ],
+  darkBlue: [ 0, 0, 50],
   royalBlue: [ 65, 105, 225],
-  navy: [0, 0, 110],
+  navy: [0, 0, 25],
   sportingBlue: [ 147, 177, 215 ],
-  cyan: [ 0, 255, 255],
+  cyan: [ 0, 250, 250],
   
-  indigo: [ 55, 0, 130 ],
-  darkIndigo: [ 25, 0, 55 ],
+  indigo: [ 75, 0, 130 ],
+  darkIndigo: [ 36, 0, 65 ],
 
   blueViolet: [ 138, 43, 226 ],
   
-  purple: [ 102, 0, 102 ],
+  purple: [ 128, 0, 128 ],
   royalPurple: [ 102, 51, 153 ],
   hornedFrogPurple: [ 77, 25, 121 ],
   violet: [ 148, 0, 211 ],
-  darkViolet: [ 75, 0, 110 ],
+  darkViolet: [ 74, 0, 205 ],
 
-  brown: [ 40, 26, 13 ],
-  gold: [ 255, 215, 0],
-  silver: [ 192, 192, 192],
+  brown: [ 32, 20, 11 ],
+  darkBrown: [ 20, 13, 5 ],
+  gold: [ 255, 215, 0 ],
+  silver: [ 175, 175, 175 ],
 
   black: [ 0, 0, 0 ],
   off:  [ 0, 0, 0 ]
@@ -644,16 +646,17 @@ function processV2Request (request, response) {
     let session = (request.body.session) ? request.body.session : undefined;
 
     // create a session id if needed
-    if (!session || session == null) {
+    if (session == undefined || session == null) {
       session = "pseudoSession-" + ++sessionCounter;
     }
+    console.log(`request: session=${session}`);
 
     // create sessionData if needed
     let sessionData = getSessionData(session);
     if (sessionData === undefined) {
       sessionData = { sequence: sessionCounter++, creationTimestamp: new Date() };
       sessionDataCache[session] = sessionData;
-      console.log(`creatingSessionData: session=${request.session}`)
+      console.log(`creatingSessionData: session=${session}`)
     }
 
     if (sessionDataCache.length > maxSessionCount) {
