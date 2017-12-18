@@ -131,7 +131,7 @@ const colorNameToChannelDataMap = {
   green:[ 0, 255, 0 ],
   darkGreen: [ 0, 100, 0 ],
   grinchGreen: [ 40, 190, 0 ],
-  olive: [ 128, 128, 0 ],
+  olive: [ 96, 96, 0 ],
   turquoise: [ 64, 224, 204 ],
   darkTurquoise: [ 0, 206, 209 ],
   lime: [127, 255, 0],
