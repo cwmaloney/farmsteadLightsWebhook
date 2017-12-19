@@ -90,7 +90,7 @@ const teamNameToColorsMap = {
   Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
               'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
   Rainbow: [ 'darkRed', 'red', 'orangeRed', 'orange', 'yellow',
-              'green', 'blue', 'midnightBlue', 'blueViolet', 'darkViolet'],
+             'chartreuse', 'green', 'blue', 'darkIndigo', 'darkViolet'],
   Reindeer: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
               'darkBrown', 'darkBrown', 'darkBrown', 'red', 'black'],
   Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
@@ -115,7 +115,7 @@ const colorNameToChannelDataMap = {
 
   red: [ 255, 0, 0 ],
   crimson: [ 220, 20, 60 ],
-  darkRed: [40, 0, 0],
+  darkRed: [20, 0, 0],
 
   pink: [ 255, 102, 178 ],
   darkPink: [ 175, 75, 140 ],
@@ -129,7 +129,8 @@ const colorNameToChannelDataMap = {
   yellow: [ 255, 255, 0 ],
 
   yellowGreen: [ 154, 205, 50 ],
-  
+  chartreuse: [ 63, 128, 0 ],
+
   green:[ 0, 255, 0 ],
   darkGreen: [ 0, 30, 0 ],
   grinchGreen: [ 40, 190, 0 ],
@@ -138,27 +139,31 @@ const colorNameToChannelDataMap = {
   darkTurquoise: [ 0, 206, 209 ],
   lime: [127, 255, 0],
   teal: [ 0, 128, 128],
-  
+
+  blueGreen: [ 13, 152, 186 ],
+  cyan: [ 0, 250, 250],
+  darkCyan: [ 0, 90, 90 ],
+ 
   blue: [ 0, 0, 255 ],
   lightBlue: [ 107, 164, 184 ],
   cornFlowerBlue: [ 70, 119, 207 ],
-  darkBlue: [ 0, 0, 50],
+  darkBlue: [ 0, 0, 30],
   royalBlue: [ 65, 105, 225],
   navy: [0, 0, 25],
   midnightBlue: [ 25, 25, 112 ],
   sportingBlue: [ 147, 177, 215 ],
-  cyan: [ 0, 250, 250],
   
-  indigo: [ 75, 0, 130 ],
-  darkIndigo: [ 10, 0, 26 ],
+  indigo: [ 28, 0, 64 ],
+  darkIndigo: [ 7, 0, 16 ],
 
   blueViolet: [ 138, 43, 226 ],
   
   purple: [ 75, 0, 128 ],
   royalPurple: [ 102, 51, 153 ],
   hornedFrogPurple: [ 77, 25, 121 ],
-  violet: [ 148, 0, 211 ],
-  darkViolet: [ 42, 0, 135 ],
+
+  violet: [ 139, 0, 255 ],
+  darkViolet: [ 35, 0, 58 ],
 
   brown: [ 32, 20, 11 ],
   darkBrown: [ 20, 13, 5 ],
@@ -490,7 +495,7 @@ function setAllElementColorsByRgb(request, response) {
       }
   }
 
-  const rgb = [ red, blue, green ];
+  const rgb = [ red, green, blue ];
 
   for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
     artnet.setChannelData(universe, elementChannelNumber + 3*(elementIndex - 1), rgb);
