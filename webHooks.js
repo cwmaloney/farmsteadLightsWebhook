@@ -112,7 +112,8 @@ const colorNameToChannelDataMap = {
   snow: [ 225, 225, 225 ],
   celadon: [ 162, 215, 165 ],
   gray: [ 32, 32, 32 ],
-
+  silver: [ 175, 175, 175 ],
+  
   red: [ 255, 0, 0 ],
   crimson: [ 220, 20, 60 ],
   darkRed: [20, 0, 0],
@@ -127,6 +128,10 @@ const colorNameToChannelDataMap = {
   orangeRed: [255, 69, 0],
 
   yellow: [ 255, 255, 0 ],
+
+  brown: [ 32, 20, 11 ],
+  darkBrown: [ 20, 13, 5 ],
+  gold: [ 215, 185, 0 ],
 
   yellowGreen: [ 154, 205, 50 ],
   chartreuse: [ 63, 128, 0 ],
@@ -164,11 +169,6 @@ const colorNameToChannelDataMap = {
 
   violet: [ 139, 0, 255 ],
   darkViolet: [ 35, 0, 58 ],
-
-  brown: [ 32, 20, 11 ],
-  darkBrown: [ 20, 13, 5 ],
-  gold: [ 215, 185, 0 ],
-  silver: [ 175, 175, 175 ],
 
   black: [ 0, 0, 0 ],
   off:  [ 0, 0, 0 ]
