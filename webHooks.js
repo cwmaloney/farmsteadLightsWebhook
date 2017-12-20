@@ -107,7 +107,8 @@ const teamNameToColorsMap = {
   Sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
               'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
   Snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
-  Tigers: [ 'gold', 'gold', 'gold', 'black', 'gold', 'gold', 'black', 'gold', 'gold', 'gold'],
+  Tigers: [ 'gold', 'gold', 'black', 'black', 'gold'
+            'gold', 'black', 'black', 'gold', 'gold'],
   USA: [ 'red', 'red', 'red', 'red', 'white', 'white', 'blue', 'blue', 'blue', 'blue' ],
   Wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
               'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ]
