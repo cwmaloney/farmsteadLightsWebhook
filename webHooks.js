@@ -90,7 +90,7 @@ const teamNameToColorsMap = {
   Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
               'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
   Rainbow: [ 'darkRed', 'red', 'orangeRed', 'orange', 'yellow',
-             'chartreuse', 'green', 'blue', 'darkIndigo', 'darkViolet'],
+             'chartreuse', 'green', 'blue', 'indigo', 'violet'],
   Reindeer: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
               'darkBrown', 'darkBrown', 'darkBrown', 'red', 'black'],
   Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
