@@ -32,8 +32,15 @@ const maxSessionCount = 100;
 let sessionCounter = 0;
 
 function getSessionData(session) {
-  console.log(`getSessionData: session=${session} data=${sessionDataCache[session]}`)
-    return sessionDataCache[session];
+  console.log(`getSessionData: session=${session} data=${sessionDataCache[session]}`);
+
+  let sessionData = sessionDataCache[session];
+  if (sessionData === undefined) {
+    sessionData = {};
+    sessionDataCache[session] = sessionData;
+  }
+
+  return sessionData;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -216,8 +223,8 @@ function extractRandomElement(anArray) {
 // This also stores the list of unused facts for the category in the app data
 // api.ai maintains app.data as "session data"
 function getUnusedFacts(request, categoryName) {
-  const sessionData = getSessionData(request);
-
+  let sessionData = getSessionData(request);
+  
   if (sessionData.unusedFacts === undefined) {
     sessionData.unusedFacts = {};
   }
