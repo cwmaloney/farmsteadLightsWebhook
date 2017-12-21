@@ -37,30 +37,6 @@ function getSessionData(request) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// Setup the ArtNet interface
-//////////////////////////////////////////////////////////////////////////////
-
-const artnet = new ArtNet();
-const universe = 0;
-const configuration = { "universe": universe, "address": "10.0.0.18" };
-artnet.configureUniverse(configuration);
-
-//////////////////////////////////////////////////////////////////////////////
-// DMX mapping
-//////////////////////////////////////////////////////////////////////////////
-
-const elementNameToChannelMap = {
-  tree: 1,
-  trees: 1,
-  poles: 32,
-  fence: 48,
-  elf: 64
-};
-
-const elementCountMap = {
-  tree: 10,
-  trees: 10
-};
 
 const teamNameToColorsMap = {
   Chiefs: [ 'red', 'red', 'yellow', 'red', 'red', 'red', 'red', 'yellow', 'red', 'red'],
@@ -163,6 +139,148 @@ const colorNameToChannelDataMap = {
   black: [ 0, 0, 0 ],
   off:  [ 0, 0, 0 ]
 };
+
+//////////////////////////////////////////////////////////////////////////////
+// Commands that can be sent to elements
+/////////////////////////////////////////////////////////////////////////////
+
+const commands = [
+  {
+    /* -----
+    Elf parts
+      1 - body/head/outline
+      2 - eyes
+      3 - unused - future
+      4 - top mouth
+      5 - middle mouth
+      6 - bottom mouth
+      7 - open mouth
+      8 - ooh circle mouth
+    ----- */
+    command: "flash", elementType: "elf",
+    directives: [
+      { channelData: [ 1, 2, 3, 4, 5, 6, 7, 8 ], duration: 250 },
+      { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 250 },
+      { channelData: [ 1, 2, 3, 4, 5, 6, 7, 8 ], duration: 500 },
+      { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+      { channelData: [ 1, 2, 3, 4, 5, 6, 7, 8 ], duration: 1000 },
+      { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 1000 }
+    ]
+  }
+];
+
+//////////////////////////////////////////////////////////////////////////////
+// DMX mapping
+//////////////////////////////////////////////////////////////////////////////
+
+const elements = {
+  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, channel: 1, channels: 3},
+  trees:   { elementType: "trees", queueName: "trees", count: 1, universe: 0, channel: 1, channels: 30 },
+  Buddy:   { elementType: "elf", queueName: "Buddy", count: 1, universe: 1, channel: 113, channels: 8 },
+  Kringle: { elementType: "elf", queueName: "Kringle", count: 1, universe: 1, channel: 121, channels: 8 },
+  Bliss:   { elementType: "elf", queueName: "Bliss", count: 1, universe: 2, channel: 129, channels: 8 },
+  Hermey:  { elementType: "elf", queueName: "Hermey", count: 1, universe: 2, channel: 137, channels: 8 }
+};
+
+const treeDirectiveDuration = 5000;
+
+const universes = [
+  { universe: 0, "address": "10.0.0.18" },
+  { universe: 1, "address": "10.254.0.1" },
+  { universe: 2, "address": "10.254.0.2" }
+];
+
+//////////////////////////////////////////////////////////////////////////////
+// DirectiveQueue
+//   Directives are channel updates with a duration.
+//   The duration delays processiong of the nest message in the queue.
+//////////////////////////////////////////////////////////////////////////////
+
+function setChannelData(directive) {
+  artnet.setChannelData(directive.universe,
+    directive.channelNumber,
+    directive.channelData);
+  artnet.send(directive.universe);
+}
+
+class DirectiveQueue {
+  constructor() {
+    this.oldestIndex = 1;
+    this.newestIndex = 1;
+    this.directives = {};
+    this.thottleTimerId
+  }
+
+  getSize() {
+    return this.newestIndex - this.oldestIndex;
+  }
+
+  enqueue(directive) {
+    if (!Array.isArray(directive)) {
+      for (let arrayIndex = 0; arrayIndex < directive.length; arrayIndex++) {
+        this.directives[this.newestIndex] = directive[arrayIndex];
+        this.newestIndex++;
+      }
+    }
+    else {
+      this.directives[this.newestIndex] = directive;
+      this.newestIndex++;
+    }
+    sendNextDirective();
+   }
+
+   dequeue() {
+    const oldestIndex = this.oldestIndex;
+    const newestIndex = this.newestIndex;
+    let directive;
+ 
+    if (oldestIndex !== newestIndex) {
+      directive = this.directives[oldestIndex];
+      delete this.directives[oldestIndex];
+      this.oldestIndex++;
+      return directive;
+    }
+    return undefined;
+  }
+
+  sendNextDirective() {
+    if (this.thottleTimerId === undefined || this.thottleTimerId === null) {
+      let directive = dequeue();
+      if (directive) {
+        sendChannelData(directive);
+        if (directive.duration !== undefined) {
+          this.thottleTimerId = setTimeout(
+            this.onThrottleTimeout.bind(this, universe), universeInfo.minMessageInterval);
+        }
+      }
+    }
+  }
+  
+  onThrottleTimeout(universe) {
+    this.thottleTimerId = null;
+    sendNextDirective();
+  }
+}
+
+const directiveQueues = { };
+
+function getQueueForElement(name) {
+  let queueName = elements[name];
+  return directiveQueues[queueName];
+}
+
+function queueDirectives(directive) {
+  if (directive !== null && directive !== undefined) {
+    let queue = getQueueForElement(directive.elementName);
+    queue.enqueue(directive);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// The ArtNet interface
+//////////////////////////////////////////////////////////////////////////////
+
+const artnet = new ArtNet();
 
 //////////////////////////////////////////////////////////////////////////////
 // functions to support fact requests
@@ -301,28 +419,29 @@ function sendSuggestions(request, response, categoryName) {
       `You have heard everything I know about ${categoryName}`);
     }
     else {
-      fillResponse(
-        `I'm confused.`);
-        
+      fillResponse(`I'm confused.`);    
     }
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// functions to support show change requests
+// setElementColor
 //////////////////////////////////////////////////////////////////////////////
 
 function setElementColor(request, response) {
   const elementName = request.parameters.elementName;
   if (elementName === undefined || elementName == null) {
     console.error('webhook::setElementColor - missing elementName');
-    fillResponse(request, response,
-      `Oh - I am tired. I forget the element name. Please try again later`);
     return;
-  }  
-  const elementChannelNumber = elementNameToChannelMap[elementName];
+  }
+  const elementInfo = elements[elementName];
+  if (elementInfo === undefined || elementInfo === null) {
+    console.error(`webhook::setElementColor - ${elementName} is not a valid elemenet name.`);
+    return;
+  }
+  
+  const elementChannelNumber = elementInfo.channelNumber;
   if (elementChannelNumber === undefined || elementChannelNumber === null) {
-    fillResponse(request, response,
-      `I don't have ${elementName}. Sorry!`);
+    console.error(`webhook::setElementColor - {elementName} is missing a channel number`);
     return;
   }
 
@@ -330,7 +449,7 @@ function setElementColor(request, response) {
   if (elementNumber === undefined || elementNumber == null) {
     elementNumber = 1;
   }
-  const elementCount = elementCountMap[elementName];
+  const elementCount = elementInfo.count;
   if (elementCount) {
     if (elementNumber < 1 || elementNumber > elementCount) {
       fillResponse(request, response,
@@ -342,54 +461,65 @@ function setElementColor(request, response) {
   const colorName = request.parameters.colorName;
   if (colorName === undefined || colorName == null) {
     console.error('webhook::setElementColor - missing colorName');
-    fillResponse(request, response,
-      `Oh - I am tired. I forget the color name. Please try again later`);
     return;
   }
   const colorChannelData = colorNameToChannelDataMap[colorName];
   if (colorChannelData === undefined) {
-    fillResponse(request, response,
-      `I don't know color ${colorName}. Sorry!`);
+    console.error(`webhook::setElementColor - Invalid color ${colorName}`);
     return;
   }
-
-  artnet.setChannelData(universe, elementChannelNumber + 3*(elementNumber - 1), colorChannelData);
-  artnet.send(universe);
 
   let message = (!elementNumber)
     ? `Changing the color of ${elementName} to ${colorName}. Happy Holidays!`
     : `Changing the color of ${elementName} ${elementNumber} to ${colorName}. Happy Holidays!`;
 
+  let directive = {};
+
+  directive.elementName = elementName;
+  directive.universe = universe;
+  directive.channelNumber = parms.elementChannelNumber + 3*(parms.elementNumber - 1);
+  directive.channelData = colorChannelData;
+  directive.duration = treeDirectiveDuration;
+
+  queueDirectives(directive);
+  
   fillResponse(request, response, message);    
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// setAllElementColors 
+//////////////////////////////////////////////////////////////////////////////
+
 function setAllElementColors(request, response) {
   // console.log("setAllElementColors");
+
   const elementName = request.parameters.elementName;
   if (elementName === undefined || elementName == null) {
     console.error('webhook::setAllElementColors - missing elementName');
-    fillResponse(request, response,
-      `Oh - I am tired. I forget the element name. Please try again later`);
     return;
   }
   // console.log("setAllElementColors, elementName" + elementName);  
-  const elementChannelNumber = elementNameToChannelMap[elementName];
+
+  const elementInfo = elements[elementName];
+  if (elementInfo === undefined || elementInfo === null) {
+    console.error(`webhook::setAllElementColors - ${elementName} is not a valid elemenet name.`);
+    return;
+  }
+  
+  const elementChannelNumber = elementInfo.channelNumber;
   if (elementChannelNumber === undefined || elementChannelNumber === null) {
-    fillResponse(request, response,
-      `I don't have ${elementName}. Sorry!`);
+    console.error(`webhook::setAllElementColors - {elementName} is missing a channel number`);
     return;
   }
   // console.log("setAllElementColors, elementChannelNumber=" + elementChannelNumber);  
   
-  const elementCount = elementCountMap[elementName];
+  const elementCount = elementInfo.channelCount;
   // console.log("setAllElementColors, elementCount=" + elementCount);  
   
   const colorNames = request.parameters.colorNames;
-  console.log("setAllElementColors, colorNames=", colorNames);  
+  // console.log("setAllElementColors, colorNames=", colorNames);  
   if (colorNames === undefined || colorNames == null) {
     console.error('webhook::setAllElementColors - missing colorNames');
-    fillResponse(request, response,
-      `Oh - I am tired. I forget the color names. Please try again later`);
     return;
   }
 
@@ -398,6 +528,8 @@ function setAllElementColors(request, response) {
   if (!Array.isArray(colorNames)) {
     colorName = colorNames;
   }
+
+  let channelData = [];
   for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
     if (Array.isArray(colorNames)) {
       colorIndex++;
@@ -412,40 +544,56 @@ function setAllElementColors(request, response) {
     const colorChannelData = colorNameToChannelDataMap[colorName];
     // console.log("setAllElementColors, colorChannelData=", colorChannelData);  
     if (colorChannelData === undefined) {
-      fillResponse(request, response,
-        `I don't know color ${colorName}. Sorry!`);
+      console.error(`webhook::setAllElementColors - invalid color ${colorName}`);
      return;
     }
 
-    artnet.setChannelData(universe, elementChannelNumber + 3*(elementIndex - 1), colorChannelData);
+    for (let index = 0; index < colorChannelData.length; index++) {
+      channelData[(3*(elementIndex - 1)) + index] = colorChannelData[index];
+    }    
   }
-  artnet.send(universe);
+  
+  let directive = {};
 
+  directive.elementName = elementName;
+  directive.universe = universe;
+  directive.channelNumber = elementChannelNumber;
+  directive.channelData = channelData;
+  directive.duration = treeDirectiveDuration;
+
+  queueDirectives(directive);  
+   
   let message = `Changing the colors of ${elementName}. Happy Holidays!`;
-
   fillResponse(request, response, message);    
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// setAllElementColorsByRgb 
+//////////////////////////////////////////////////////////////////////////////
 
 function setAllElementColorsByRgb(request, response) {
   // console.log("setAllElementColorByRGB");
   const elementName = request.parameters.elementName;
   if (elementName === undefined || elementName == null) {
-    console.error('webhook::setAllElementColorByRGB - missing elementName');
-    fillResponse(request, response,
-      `Oh - I am tired. I forget the element name. Please try again later`);
+    console.error('webhook::setAllElementColorsByRgb - missing elementName');
     return;
   }
-  // console.log("setAllElementColorByRGB, elementName" + elementName);  
-  const elementChannelNumber = elementNameToChannelMap[elementName];
-  if (elementChannelNumber === undefined || elementChannelNumber === null) {
-    fillResponse(request, response,
-      `I don't have ${elementName}. Sorry!`);
+  // console.log("setAllElementColorsByRgb, elementName" + elementName);  
+
+  const elementInfo = elements[elementName];
+  if (elementInfo === undefined || elementInfo === null) {
+    console.error(`webhook::setAllElementColorsByRgb - ${elementName} is not a valid elemenet name.`);
     return;
   }
-  // console.log("setAllElementColorByRGB, elementChannelNumber=" + elementChannelNumber);  
   
-  const elementCount = elementCountMap[elementName];
+  const elementChannelNumber = elementInfo.channelNumber;
+  if (elementChannelNumber === undefined || elementChannelNumber === null) {
+    console.error(`webhook::setAllElementColorsByRgb - {elementName} is missing a channel number`);
+    return;
+  }
+  // console.log("setAllElementColorsByRgb, elementChannelNumber=" + elementChannelNumber);  
+  
+  const elementCount = elementInfo.count;
   // console.log("setAllElementColorByRGB, elementCount=" + elementCount);  
   
   let red = request.parameters.red;
@@ -486,6 +634,7 @@ function setAllElementColorsByRgb(request, response) {
   }
   const rgb = [ red, blue, green ];
 
+  let channelData = [];
   for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
     if (Array.isArray(colorNames)) {
       colorIndex++;
@@ -496,96 +645,139 @@ function setAllElementColorsByRgb(request, response) {
       colorName = colorNames[colorIndex];
     }
 
-    artnet.setChannelData(universe, elementChannelNumber + 3*(elementIndex - 1), rgb);
+    for (let index = 0; index < rgb.length; index++) {
+      channelData[(3*(elementIndex - 1)) + index] = rgb[index];
+    }    
   }
-  artnet.send(universe);
+  
+  let directive = {};
 
-  let message = `Changing the colors of ${elementName} to ${rgb}.`;
-
+  directive.elementName = elementName;
+  directive.universe = universe;
+  directive.channelNumber = elementChannelNumber;
+  directive.channelData = channelData; 
+  directive.duration = treeDirectiveDuration;
+  
+  queueDirectives(directive);  
+  
+  let message = `Changing the colors of ${elementName} to ${red}, ${green}, ${blue}.`;
   fillResponse(request, response, message);    
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// do command 
+//////////////////////////////////////////////////////////////////////////////
+
+function doCommand(request, response) {
+  // console.log("setAllElementColorByRGB");
+  const elementName = request.parameters.elementName;
+  if (elementName === undefined || elementName == null) {
+    console.error('webhook::doCommand - missing elementName');
+    return;
+  }
+  // console.log("setAllElementColorsByRgb, elementName" + elementName);  
+
+  const elementInfo = elements[elementName];
+  if (elementInfo === undefined || elementInfo === null) {
+    console.error(`webhook::doCommand - ${elementName} is not a valid elemenet name.`);
+    return;
+  }
+    
+  const elementCount = elementInfo.count;
+  // console.log("doCommand, elementCount=" + elementCount);  
+  
+  let commandName = request.parameters.commandName;
+  if (commandName === undefined || commandName == null) {
+    console.error('webhook::doCommand - missing commandName');
+    return;
+  }
+
+  let commandInfo = commands[commandName];
+  if (commandInfo === undefined || commandInfo === null) {
+    console.error(`webhook::doCommand - ${elementName} is not a valid command name.`);
+    return;
+  }
+  
+  let directives = [];
+  for (let index = 0; index < commandInfo.directives.length; index++) {
+    const prototype = commandInfo.directives[index];
+    directives.push( {
+      elementName: elementName,
+      universe: elementInfo.universe,
+      channelNumber: elementInfo.channelNumber,
+      channelData: prototype.channelData,
+      duration: prototype.duration
+    })
+  };
+
+  queueDirectives(directives);
+  
+  let message = `Making ${elementName} ${commandName}.`;
+  fillResponse(request, response, message);    
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// cheer 
+//////////////////////////////////////////////////////////////////////////////
 
 function cheer(request, response) {
   let teamName = request.parameters.teamName;
   if (teamName === undefined || teamName == null) {
-    console.error('webhook::cheer - missing teamName');
-    fillResponse(request, response,
-      `Oh - I am tired forget the team name. Please try again later`);
+    console.error('webhook::parseCheer - missing teamName');
     return;
   }
-  // teamName = teamName.toLowerCase();
-  
+   
   const colorNames = teamNameToColorsMap[teamName];
   if (!colorNames || colorNames == null) {
-    fillResponse(request, response,
-      `I don't have ${teamName}. Sorry!`);
+    console.error(`webhook::parseCheer - Invalid team name ${teamName}.`);
     return;
   }
-  for (let index = 0; index < colorNames.length; index++) {
-    const colorName = colorNames[index];
+
+  let channelData = [];
+  for (let colorIndex = 0; colorIndex < colorNames.length; colorIndex++) {
+    const colorName = colorNames[colorIndex];
     const colorChannelData = colorNameToChannelDataMap[colorName];
     if (colorChannelData === undefined) {
-      fillResponse(request, response,
-        `I don't know color ${colorName}. Sorry!`);
+      console.error(`webhook::parseCheer - invalid color ${colorName}`);
       return;
     }
-    artnet.setChannelData(universe, elementNameToChannelMap.tree + (3*index), colorChannelData);
+    for (let rgbIndex = 0; rgbIndex < colorChannelData.length; rgbIndex++) {
+      channelData[(3*colorIndex) + rgbIndex] = colorChannelData[rgbIndex];
+    }
   }
-  artnet.send(universe);
+  
+  let directive = {};
+
+  directive.elementName = elementName;
+  directive.universe = universe;
+  directive.channelNumber = elementChannelNumber;
+  directive.channelData = channelData;
+  directive.duration = treeDirectiveDuration;
+
+  queueDirectives(directive);
 
   fillResponse(request, response, `Go ${teamName}! Watch the trees cheer with you!`);
+  
+  return directive;
 }
 
-function showElement(elementName) {
-  const showElementName = app.getArgument("showElement");
-  if (!showElementName || showElementName == null) {
-    console.error('element name is missing');
-    sendUnregonizedInput();
+function queueCheer(request, response) {
+  const parameters = setElementColorByRgb(request, response);
+  if (parameters !== null && parameters !== undefined) {
+    treeQueue.queue(request, parameters);
   }
-  app.tell(`Here comes ${elementName}.`);
 }
 
-function hideElement(elementName) {
-  const showElementName = app.getArgument("showElement");
-  if (!showElementName || showElementName == null) {
-    console.error('element name is missing');
-    sendUnregonizedInput();
+function cheer(request, response) {
+  const parameters = parseCheer(request, response);
+  if (parameters !== null && parameters !== undefined) {
+    setChannelData(parameters);
   }
-  app.tell(`Okay, ${elementName} is going to hide now.`);  
 }
 
-function runShow(elementName, showName) {
-  const elementName = app.getArgument("element");
-  if (!elementName || elementName == null) {
-    console.error('element name is missing');
-    sendUnregonizedInput();
-  }
-  const colorName = app.getArgument("color");
-  if (!colorName || colorName == null) {
-    console.error('color name is missing');
-    sendUnregonizedInput();
-  }
-
-  app.tell(`Okay, chaning the color of ${elementName} to ${colorName}.`);    
-}
-
-function stopShow(elementName, showName) {
-  const elementName = app.getArgument("element");
-  if (!elementName || elementName == null) {
-    console.error('element name is missing');
-    sendUnregonizedInput();
-  }
-  const colorName = app.getArgument("color");
-  if (!colorName || colorName == null) {
-    console.error('color name is missing');
-    sendUnregonizedInput();
-  }
-
-  app.tell(`Okay, chaning the color of ${elementName} to ${colorName}.`);    
-}
 
 //////////////////////////////////////////////////////////////////////////////
-// map requests to functions
+// map actions to functions
 //////////////////////////////////////////////////////////////////////////////
 
 // Create handlers for Dialogflow actions as well as a 'default' handler
@@ -597,6 +789,8 @@ const actionHandlers = {
   'set.all.element.colors': setAllElementColors,
 
   'set.all.element.colorsByRgb': setAllElementColorsByRgb,
+
+  'do.command': doCommand,
   
   'get.random.fact' : getRandomFact,
 
@@ -627,7 +821,7 @@ const actionHandlers = {
 // Function to handle v2 webhook requests from Dialogflow
 //////////////////////////////////////////////////////////////////////////////
 function processV2Request (request, response) {
-  try
+try
   {
     // An action is a string that identifies what the webhook should do.
     let action = (request.body.queryResult.action) ? request.body.queryResult.action : 'default';
@@ -690,6 +884,7 @@ function processV2Request (request, response) {
 function fillResponse(request, response, responsePackage) {
   // if the response is a string send it as a response to the user
   let formattedResponse = { "source": "farmsteadLightsWebhook"};
+
   if (typeof responsePackage === 'string') {
     formattedResponse = {fulfillmentText: responsePackage};
   } else {
@@ -726,6 +921,19 @@ function fillResponse(request, response, responsePackage) {
   // Send the response to Dialogflow
   response.json(formattedResponse);
   console.log('webhook fillResponse: ', formattedResponse);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+// configure the universes
+//////////////////////////////////////////////////////////////////////////////
+
+for (let index = 0; index < universes.length; index++) {
+  const universeConfiguration = universes[index];
+  console.log(`webhook universeConfiguration=${JSON.stringify(universeConfiguration)}`);
+  artnet.configureUniverse(universeConfiguration);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -767,153 +975,3 @@ server.listen(port, function() {
   console.log("webhook server starting; listening on port " + port);
 });
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-// ... junk... for version 1 ????
-///////////////////////////////////////////////////////////////////////////////
-
-
-// // Create handlers for Dialogflow actions as well as a 'default' handler
-// const actionHandlers = {
-//   'check': () => {
-//     const message = 'Hello, This is the webhook. I seem to be functioning withing nomal paramters!';
-
-//     // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
-//    if (requestSource === googleAssistantRequest) {
-//      sendGoogleResponse(message);
-//    } else {
-//      fillResponse(message);
-//    }
-//  },
-//  // The default fallback intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
-//  'input.unknown': () => {
-//    const message = 'I\'m having trouble, can you try that again?';
-
-//    // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
-//    if (requestSource === googleAssistantRequest) {
-//      sendGoogleResponse(message);
-//    } else {
-//      fillResponse(message);
-//    }
-//  },
-//  // Default handler for unknown or undefined actions
-//  'default': () => {
-//    // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
-//    if (requestSource === googleAssistantRequest) {
-//      const message = 'I\'m having trouble.  Please try again later.';
-//      let responsePackage = {
-//        speech: message, // spoken response
-//        text: message // displayed response
-//      };
-//      sendGoogleResponse(responsePackage);
-//    } else {
-//      let responsePackage = {
-//        speech: message, // spoken response
-//        text: message // displayed response
-//      };
-//      fillResponse(responsePackage);
-//    }
-//  }
-// };
-
-
-// // Function to send Google Assistant response to Dialogflow.
-// // Dialogflow will forward the response to the user
-// function sendGoogleResponse (responsePackage) {
-//   if (typeof responsePackage === 'string') {
-//     app.ask(responsePackage);
-//   } else {
-//     // If speech or displayText is defined use it to respond
-//     let googleResponse = app.buildRichResponse().addSimpleResponse({
-//       speech: responsePackage.speech || responsePackage.displayText,
-//       displayText: responsePackage.displayText || responsePackage.speech
-//     });
-//     // Optional: Overwrite previous response with rich response
-//     if (responsePackage.googleRichResponse) {
-//       googleResponse = responsePackage.googleRichResponse;
-//     }
-//     // Optional: add contexts (https://dialogflow.com/docs/contexts)
-//     if (responsePackage.googleOutputContexts) {
-//       app.setContext(...responsePackage.googleOutputContexts);
-//     }
-//     console.log('Response to Dialogflow for Google Assistant: ' + JSON.stringify(googleResponse));
-//     app.ask(googleResponse); // Send response to Dialogflow and Google Assistant
-//   }
-// }
-
-// // Function to send simple (non Google Assistant) response to Dialogflow.
-// // Dialogflow will forward the response to the user
-// function fillResponse (responsePackage) {
-//   // if the response is a string send it as a response to the user
-//   if (typeof responsePackage === 'string') {
-//     let responseJson = {};
-//     responseJson.speech = responsePackage; // spoken response
-//     responseJson.displayText = responsePackage; // displayed response
-//     response.json(responseJson); // Send response to Dialogflow
-//   } else {
-//     // If the response to the user includes rich responses or contexts send them to Dialogflow
-//     let responseJson = {};
-//     // If speech or displayText is defined, use it to respond (if one isn't defined use the other's value)
-//     responseJson.speech = responsePackage.speech || responsePackage.displayText;
-//     responseJson.displayText = responsePackage.displayText || responsePackage.speech;
-//     // Optional: add rich messages for integrations (https://dialogflow.com/docs/rich-messages)
-//     responseJson.data = responsePackage.data;
-//     // Optional: add contexts (https://dialogflow.com/docs/contexts)
-//     responseJson.contextOut = responsePackage.outputContexts;
-//     console.log('Response to Dialogflow: ' + JSON.stringify(responseJson));
-//     response.json(responseJson); // Send response to Dialogflow
-//   }
-// }
-
-// these will be to support "Google actions"
-
-// function sendFact(request, response, category, fact) {
-//   const factPrefix = category.factPrefix;
-//   // if (!screenOutput) {
-//   //   return app.ask(concat([factPrefix, fact, strings.general.nextFact]), strings.general.noInputs);
-//   // }
-
-//   let factText = null;
-//   let imageUrl = null;
-//   let imageName = null;
-//   let link = null;
-  
-//   if (typeof fact === "String") {
-//     factText = fact;
-//   } else {
-//     factText = fact.fact;
-//     image = fact.image;
-//     link = fact.link;
-//   }
-//   const image = fact.image;
-//   const [url, name] = image;
-//   const card = app.buildBasicCard(factText)
-//     .addButton(strings.general.linkOut, strings.content.link)
-//     .setImage(url, name);
-
-//   if (fact.link) {
-//     card.addButton("Learn more", fact.link);
-//   }
-
-//   const richResponse = app.buildRichResponse()
-//     .addSimpleResponse(factPrefix)
-//     .addBasicCard(card)
-//     .addSimpleResponse(`Would you like to hear another fact about ${category.name}?`)
-//     .addSuggestions(["Sure", "No thanks"]);
-
-//   app.ask(richResponse, configData.noInputPrompt);
-// };
-
-// function sendSuggestions(app) {
-//   const unfinishedCategories = getUnfinishedCategotories();
-//   if (unfinishedCategories.length == 0) {
-//     fillResponse("Looks like you've heard all my random facts!");
-//   }
-  
-//   const richResponse = app.buildRichResponse()
-//     .addSimpleResponse("You have heard everything I know about %s. I could tell you about something else.")
-//     .addSuggestions(unfinishedCategories);
-
-//   return app.ask(richResponse, strings.general.noInputs);
-// }
