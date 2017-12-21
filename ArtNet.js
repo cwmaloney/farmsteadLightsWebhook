@@ -27,8 +27,8 @@ class ArtNet extends EventEmitter {
 
   configureUniverse(configuration) {
 
-    console.log("ArtNet::configureUniverse, universe=" + configuration.universe);
-    //console.log("ArtNet::configureUniverse", "configuration", configuration);
+    // console.log("ArtNet::configureUniverse, universe=" + configuration.universe);
+    // console.log("ArtNet::configureUniverse", "configuration", configuration);
     
     const { universe = 0,
             address = '10.0.0.0',
