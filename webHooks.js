@@ -378,7 +378,7 @@ function extractRandomElement(anArray) {
 // This also stores the list of unused facts for the category in the app data
 // api.ai maintains app.data as "session data"
 function getUnusedFacts(request, categoryName) {
-  let sessionData = getSessionData(request);
+  const sessionData = getSessionData(request);
   
   if (sessionData.unusedFacts === undefined) {
     sessionData.unusedFacts = {};
@@ -674,7 +674,19 @@ function setAllElementColorsByRgb(request, response) {
       return;
       }
   }
-  const rgb = [ red, blue, green ];
+  let blue = request.parameters.blue;
+  if (blue === undefined || blue == null) {
+    console.error('webhook::setAllElementColorByRGB - missing blue');
+    fillResponse(request, response, `*** missing blue ***`);
+    return;
+  } else {
+    if (blue < 0 || blue > 255) {
+      console.error('webhook::setAllElementColorByRGB - blue must be 0 to 255');
+      fillResponse(request, response, `*** blue must be 0 to 255 ***`);
+      return;
+      }
+  }
+  const rgb = [ red, green, blue ];
 
   let channelData = [];
   for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
