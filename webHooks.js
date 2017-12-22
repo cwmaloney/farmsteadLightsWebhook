@@ -242,7 +242,8 @@ const universes = [
 
 function setChannelData(directive) {
   if (directive.universe > 0) {
-    console.log(`setElementColor: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
+    console.log(`setChannelData: universe=${directive.universe} channel=${directive.channelNumber}
+      data=${directive.channelData}`);
   }
   artnet.setChannelData(directive.universe,
     directive.channelNumber,
@@ -875,6 +876,65 @@ function cheer(request, response) {
   return directive;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+// doSetChannelData 
+//////////////////////////////////////////////////////////////////////////////
+
+function doSetChannelData(request, response) {
+  // console.log("doSetChannelData");
+
+  const universe = request.parameters.universe;
+  if (universe === undefined || universe == null) {
+    console.error('webhook::doSetChannelData - missing universe');
+    return;
+  }
+  // console.log("setAllElementColorsByRgb, elementName" + elementName);  
+
+  const start = request.parameters.start;
+  if (start === undefined || start === null) {
+    console.error(`webhook::doSetChannelData - missing start`);
+    return;
+  }
+
+  const end = request.parameters.end;
+  if (end === undefined || end === null) {
+    end = start;
+  }
+
+  const value = request.parameters.value;
+  if (value === undefined || value === null) {
+    value = 255;
+  }
+
+  if (start < 1 || start > 512) {
+    console.error('webhook::doSetChannelData - bad start');
+    fillResponse(request, response)
+  }
+
+  if (end < 1 || end > 512) {
+    console.error('webhook::doSetChannelData - bad end');
+    fillResponse(request, response)
+  }
+  
+  let channelData = [];
+  for (let index = 0; index < end-start+1; index++) {
+    channelData[start + index - 1] = value;
+  }    
+  
+  let directive = {};
+
+  directive.universe = universe;
+  directive.channelNumber = start;
+  directive.channelData = channelData; 
+  
+  setChannelData(directive); 
+  
+  console.log(`doSetChannelData universe=${universe} start=${start} end=${end} value=${value}`);
+  let message = `doSetChannelData universe=${universe} start=${start} end=${end} value=${value}`;
+  fillResponse(request, response, message);    
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // map actions to functions
 //////////////////////////////////////////////////////////////////////////////
@@ -888,6 +948,8 @@ const actionHandlers = {
   'set.all.element.colors': setAllElementColors,
 
   'set.all.element.colors.rgb': setAllElementColorsByRgb,
+
+  'do.set.channel.data': doSetChannelData,
 
   'do.command': doCommand,
   
@@ -1077,13 +1139,55 @@ server.listen(port, function() {
 });
 
 
-{
-  let channelData = [];
-  channelData.length = 512;
-  channelData.fill(255);
-  console.log(`channelData=${channelData}`);
-  artnet.setChannelData(1, 1, channelData);
-  artnet.send(1);
-  artnet.setChannelData(2, 1, channelData);
-  artnet.send(2);
-}
+// let counter = 0;
+
+// function tick()
+// {
+//   let channelData = [];
+
+//   let universe = 1;
+//   let start = 1;
+//   switch (counter%6) {
+//     case 0:
+//       start = 113;
+//       channelData.length = 8;
+//       channelData.fill(255);
+//       universe = 1;
+//       break;
+//      case 1:
+//       start = 121;
+//       channelData.length = 8;
+//       channelData.fill(255);
+//       universe = 1;
+//       break;
+//     case 2:
+//       start = 129;
+//       channelData.length = 8;
+//       channelData.fill(255);
+//       universe = 2;
+//       break;
+//     case 3:
+//       start = 137;
+//       channelData.length = 8;
+//       channelData.fill(255);
+//       universe = 2;
+//       break;
+//     case 4:
+//       channelData.length = 512;
+//       channelData.fill(0);
+//       universe = 1;
+//       break;
+//     case 5:
+//       channelData.length = 512;
+//       channelData.fill(0);
+//       universe = 2;
+//       break;
+//   }
+
+//   artnet.setChannelData(universe, start, channelData);
+//   artnet.send(universe);
+//   counter++;
+//   setTimeout(tick, 5000);
+// }
+
+// tick();

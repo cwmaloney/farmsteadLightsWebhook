@@ -283,10 +283,10 @@ class ArtNet extends EventEmitter {
       let message = this.createArtDmxMessage(universe, universeInfo.changedChannelThreshold);
       universeInfo.changedChannelThreshold = 0;
   
-      if (universe > 0) {
-        console.log(`ArtNet::send, u=${universe} p=${universeInfo.port} a=${universeInfo.address}
-        l= ${message.length} m=${JSON.stringify(message)}`);
-      }
+      // if (universe > 0) {
+      //   console.log(`ArtNet::send, u=${universe} p=${universeInfo.port} a=${universeInfo.address}
+      //   l= ${message.length} m=${JSON.stringify(message)}`);
+      // }
       universeInfo.socket.send(message, 0, message.length, universeInfo.port, universeInfo.address,
         this.onAfterSend.bind(this, universe), universeInfo.minMessageInterval);
     }
