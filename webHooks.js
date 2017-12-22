@@ -240,7 +240,7 @@ const universes = [
 //////////////////////////////////////////////////////////////////////////////
 
 function setChannelData(directive) {
-  if (directive.universe >= 0) {
+  if (directive.universe > 0) {
     console.log(`setChannelData: universe=${directive.universe} channel=${directive.channelNumber}
       data=${directive.channelData}`);
   }
