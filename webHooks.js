@@ -548,6 +548,8 @@ function setElementColor(request, response) {
   directive.channelData = colorChannelData;
   directive.duration = treeDirectiveDuration;
 
+  // console.log(`setElementColor: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
+
   const queueMessage = enqueueDirectives(directive);
 
   let message = (!elementNumber)
@@ -631,7 +633,7 @@ function setAllElementColors(request, response) {
   directive.channelNumber = elementInfo.elementChannelNumber;
   directive.channelData = channelData;
   directive.duration = treeDirectiveDuration;
-
+  
   const queueMessage = enqueueDirectives(directive);
 
   let colorMessage = "";
@@ -651,6 +653,8 @@ function setAllElementColors(request, response) {
     colorMessage = colorNames;
   }
    
+
+  // console.log(`setAllElementColors: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
   let message = `Setting colors of ${elementName} to ${colorMessage}. ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);    
 }
@@ -739,6 +743,7 @@ function setAllElementColorsByRgb(request, response) {
   
   const queueMessage = enqueueDirectives(directive);  
   
+  // console.log(`setAllElementColorsByRgb: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
   let message = `Changing the ${elementName} to ${red}, ${green}, ${blue}. ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);    
 }
@@ -794,13 +799,17 @@ function doCommand(request, response) {
   const directives = [];
   for (let index = 0; index < prototypes.length; index++) {
     const prototype = prototypes[index];
-    directives.push( {
+
+    const directive = {
       elementName: elementName,
       universe: elementInfo.universe,
       channelNumber: elementInfo.channel,
       channelData: prototype.channelData,
       duration: prototype.duration
-    })
+    };
+    directives.push(directive);
+
+    console.log(`doCommand: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
   };
 
   const queueMessage = enqueueDirectives(directives);
@@ -842,7 +851,7 @@ function cheer(request, response) {
       return;
     }
     for (let rgbIndex = 0; rgbIndex < colorChannelData.length; rgbIndex++) {
-      channelData[(elementInfo.channelCount*colorIndex) + rgbIndex] = colorChannelData[rgbIndex];
+      channelData[(3*colorIndex) + rgbIndex] = colorChannelData[rgbIndex];
     }
   }
   
@@ -856,6 +865,7 @@ function cheer(request, response) {
 
   const queueMessage = enqueueDirectives(directive);
   
+  // console.log(`cheer: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
   let message = `Go ${teamName}! Watch the trees cheer with you! ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);
   
