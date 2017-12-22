@@ -174,40 +174,58 @@ const colorNameToChannelDataMap = {
     ----- */
 
 const commands = {
-  flash: {
-    elf : {
-      directives: [
-        { channelData: [ 255, 255, 0, 255, 255, 255, 255, 255 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 255, 255, 255, 255, 255 ], duration: 1000 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 255, 255, 255, 255, 255 ], duration: 2000 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 2000 },
-        { channelData: [ 255, 255, 0, 255, 255, 255, 255, 255 ], duration: 10000 }
-      ]
-    }
-  },
   blink: {
     elf : {
       directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0  ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0  ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0  ], duration: 10000 }
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
+      ]
+    }
+  },
+  party: {
+    elf : {
+      directives: [
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 2000 },
+        { channelData: [ 255,   0, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 10000 }
+      ]
+    }
+  },
+  flash: {
+    elf : {
+      directives: [
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 2000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 10000 }
       ]
     }
   },
   smile: {
     elf: {
       directives: [
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255, 255 ], duration: 2000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 10000 }
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 2000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 2000 },
+        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 5000 }
       ]
     }
   }
@@ -219,10 +237,10 @@ const commands = {
 
 const elements = {
   tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, startChannel: 1, channelsPerElement: 3},
-  buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, startChannel: 113, channelsPerElement: 8 },
-  kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, startChannel: 121, channelsPerElement: 8 },
-  bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, startChannel: 129, channelsPerElement: 8 },
-  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 137, channelsPerElement: 8 }
+  buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, startChannel: 97, channelsPerElement: 8 },
+  kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, startChannel: 105, channelsPerElement: 8 },
+  bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, startChannel: 113, channelsPerElement: 8 },
+  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 121, channelsPerElement: 8 }
 };
 
 const treeDirectiveDuration = 5000;
@@ -891,12 +909,12 @@ function doSetChannelData(request, response) {
     end = start;
   }
 
-  const values = request.parameters.values;
+  let values = request.parameters.values;
   if (values === undefined || values === null) {
-    value = 255;
+    values = [ 255 ];
   }
   if (!Array.isArray(values)) {
-    values = [ value ];
+    values = [ values ];
   }
 
   if (start < 1 || start > 512) {
