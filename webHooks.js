@@ -240,7 +240,7 @@ const universes = [
 //////////////////////////////////////////////////////////////////////////////
 
 function setChannelData(directive) {
-  if (directive.universe > 0) {
+  if (directive.universe >= 0) {
     console.log(`setChannelData: universe=${directive.universe} channel=${directive.channelNumber}
       data=${directive.channelData}`);
   }
@@ -588,7 +588,7 @@ function setAllElementColors(request, response) {
     colorName = colorNames;
   }
 
-  const elementCount = elementInfo.elementCount;
+  const elementCount = elementInfo.count;
   // console.log("setAllElementColors, elementCount=" + elementCount);  
 
   let channelData = [];
@@ -667,9 +667,6 @@ function setAllElementColorsByRgb(request, response) {
     console.error(`webhook::setAllElementColorsByRgb - ${elementName} is not a valid elemenet name.`);
     return;
   }
-    
-  const elementCount = elementInfo.count;
-  // console.log("setAllElementColorByRGB, elementCount=" + elementCount);  
   
   let red = request.parameters.red;
   if (red === undefined || red == null) {
@@ -709,10 +706,13 @@ function setAllElementColorsByRgb(request, response) {
   }
   const rgb = [ red, green, blue ];
 
+  const elementCount = elementInfo.count;
+  // console.log("setAllElementColorByRGB, elementCount=" + elementCount);  
+
   let channelData = [];
   for (let elementNumber = 1; elementNumber <= elementCount; elementNumber++) {
     const elementStartIndex = (elementInfo.channelsPerElement)*(elementNumber - 1);
-    for (let rgbIndex = 0; rgbIndex < rgb.length; index++) {
+    for (let rgbIndex = 0; rgbIndex < rgb.length; rgbIndex++) {
       channelData[elementStartIndex + rgbIndex] = rgb[rgbIndex];
     }
   }
@@ -720,7 +720,7 @@ function setAllElementColorsByRgb(request, response) {
   let directive = {};
 
   directive.elementName = elementName;
-  directive.universe = universe;
+  directive.universe = elementInfo.universe;
   directive.channelNumber = elementInfo.startChannel;
   directive.channelData = channelData; 
   directive.duration = treeDirectiveDuration;
@@ -826,6 +826,7 @@ function cheer(request, response) {
     return;
   }
 
+  let elementCount = elementInfo.count;
   let channelData = [];
   let colorIndex = -1;
   for (let elementNumber = 1; elementNumber <= elementCount; elementNumber++) {
