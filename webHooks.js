@@ -32,7 +32,7 @@ const maxSessionCount = 100;
 let sessionCounter = 0;
 
 function getSessionData(session) {
-  console.log(`getSessionData: session=${session} data=${sessionDataCache[session]}`);
+  // console.log(`getSessionData: session=${session} data=${sessionDataCache[session]}`);
 
   let sessionData = sessionDataCache[session];
   if (sessionData === undefined) {
@@ -182,7 +182,8 @@ const commands = {
         { channelData: [ 1, 2, 0, 4, 5, 6, 7, 8 ], duration: 500 },
         { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
         { channelData: [ 1, 2, 3, 4, 5, 6, 7, 8 ], duration: 1000 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 1000 }
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 1000 },
+        { channelData: [ 1, 2, 0, 0, 0, 0, 7, 0 ], duration: 5000 }
       ]
     }
   },
@@ -217,20 +218,20 @@ const commands = {
 //////////////////////////////////////////////////////////////////////////////
 
 const elements = {
-  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, channel: 1, channels: 3},
-  trees:   { elementType: "trees", queueName: "trees", count: 1, universe: 0, channel: 1, channels: 30 },
-  Buddy:   { elementType: "elf", queueName: "Buddy", count: 1, universe: 1, channel: 113, channels: 8 },
-  Kringle: { elementType: "elf", queueName: "Kringle", count: 1, universe: 1, channel: 121, channels: 8 },
-  Bliss:   { elementType: "elf", queueName: "Bliss", count: 1, universe: 2, channel: 129, channels: 8 },
-  Hermey:  { elementType: "elf", queueName: "Hermey", count: 1, universe: 2, channel: 137, channels: 8 }
+  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, channel: 1, channelCount: 3},
+  trees:   { elementType: "trees", queueName: "trees", count: 1, universe: 0, channel: 1, channelCount: 30 },
+  buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, channel: 113, channelCount: 8 },
+  kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, channel: 121, channelCount: 8 },
+  bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, channel: 129, channelCount: 8 },
+  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, channel: 137, channelCount: 8 }
 };
 
 const treeDirectiveDuration = 5000;
 
 const universes = [
   { universe: 0, "address": "10.0.0.18" },
-  { universe: 1, "address": "10.254.0.1" },
-  { universe: 2, "address": "10.254.0.2" }
+  { universe: 1, "address": "10.7.90.1" },
+  { universe: 2, "address": "10.7.90.2" }
 ];
 
 //////////////////////////////////////////////////////////////////////////////
@@ -259,17 +260,16 @@ class DirectiveQueue {
   }
 
   enqueue(directive) {
-    if (!Array.isArray(directive)) {
+    if (Array.isArray(directive)) {
       for (let arrayIndex = 0; arrayIndex < directive.length; arrayIndex++) {
         this.directives[this.newestIndex] = directive[arrayIndex];
         this.newestIndex++;
       }
-    }
-    else {
+    } else {
       this.directives[this.newestIndex] = directive;
       this.newestIndex++;
     }
-    sendNextDirective();
+    this.sendNextDirective();
   }
 
   dequeue() {
@@ -288,12 +288,13 @@ class DirectiveQueue {
 
   sendNextDirective() {
     if (this.thottleTimerId === undefined || this.thottleTimerId === null) {
-      let directive = dequeue();
+      let directive = this.dequeue();
       if (directive) {
-        sendChannelData(directive);
-        if (directive.duration !== undefined) {
+        setChannelData(directive);
+        const duration = directive.duration;
+        if (duration !== undefined && duration !== null) {
           this.thottleTimerId = setTimeout(
-            this.onThrottleTimeout.bind(this, universe), universeInfo.minMessageInterval);
+            this.onThrottleTimeout.bind(this), duration);
         }
       }
     }
@@ -301,33 +302,48 @@ class DirectiveQueue {
   
   onThrottleTimeout(universe) {
     this.thottleTimerId = null;
-    sendNextDirective();
+    this.sendNextDirective();
   }
 }
 
 const directiveQueues = { };
 
-function getQueueForElement(name) {
-  const queueName = elements[name];
+function getQueueForElement(elementName) {
+  const elementInfo = elements[elementName.toLowerCase()];
+  const queueName = elementInfo.queueName;
   let queue = directiveQueues[queueName];
-  if (directive !== null && directive !== undefined) {
+  if (queue === null || queue === undefined) {
     queue = new DirectiveQueue();
     directiveQueues[queueName] = queue;
+    console.log(`Creating queue ${queueName} for ${elementName}`)
   }
   return queue;
 }
 
-function enqueueDirectives(directive) {
+function enqueueDirectives(directives) {
+  let queueMessage = '';
+  if (Array.isArray(directives)) {
+    for (let arrayIndex = 0; arrayIndex < directives.length; arrayIndex++) {
+      enqueueOneDirective(directives[arrayIndex]);
+    }
+  } else {
+    queueMessage = enqueueOneDirective(directives);
+  }
+  return queueMessage;
+}
+
+function enqueueOneDirective(directive) {
   if (directive !== null && directive !== undefined) {
     let queue = getQueueForElement(directive.elementName);
     queue.enqueue(directive);
     const size = queue.getSize();
     if (size == 1) {
-      return `(There is one requests in front of yours.)`;
+      return `(There is one request ahead of yours.)`;
     } else if (size > 1) {
-      return `(There are ${queue.getSize()} requests in front of yours.)`;
+      return `(There are ${queue.getSize()} requests ahead of yours.)`;
     }
   }
+  return '';
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -462,8 +478,8 @@ function sendFact(request, response, category, fact) {
   fillResponse(request, response, factText);
 }
 
-function sendSuggestions(request, response, categoryName) {
-  const unfinishedCategories = getUnfinishedCategotories(request);
+function sendCategorySuggestions(request, response, categoryName) {
+  const unfinishedCategories = getUnfinishedCategories(request);
   if (unfinishedCategories.length == 0) {
     fillResponse("Looks like you've heard all my random facts!");
   }
@@ -493,7 +509,7 @@ function setElementColor(request, response) {
     return;
   }
   
-  const elementChannelNumber = elementInfo.channelNumber;
+  const elementChannelNumber = elementInfo.channel;
   if (elementChannelNumber === undefined || elementChannelNumber === null) {
     console.error(`webhook::setElementColor - {elementName} is missing a channel number`);
     return;
@@ -526,8 +542,9 @@ function setElementColor(request, response) {
   let directive = {};
 
   directive.elementName = elementName;
-  directive.universe = universe;
-  directive.channelNumber = parms.elementChannelNumber + 3*(parms.elementNumber - 1);
+  directive.universe = elementInfo.universe;
+  directive.channelNumber = elementChannelNumber
+                          + (elementInfo.channelCount)*(elementNumber - 1);
   directive.channelData = colorChannelData;
   directive.duration = treeDirectiveDuration;
 
@@ -560,7 +577,7 @@ function setAllElementColors(request, response) {
     return;
   }
   
-  const elementChannelNumber = elementInfo.channelNumber;
+  const elementChannelNumber = elementInfo.channel;
   if (elementChannelNumber === undefined || elementChannelNumber === null) {
     console.error(`webhook::setAllElementColors - {elementName} is missing a channel number`);
     return;
@@ -610,14 +627,31 @@ function setAllElementColors(request, response) {
   let directive = {};
 
   directive.elementName = elementName;
-  directive.universe = universe;
-  directive.channelNumber = elementChannelNumber;
+  directive.universe = elementInfo.universe;
+  directive.channelNumber = elementInfo.elementChannelNumber;
   directive.channelData = channelData;
   directive.duration = treeDirectiveDuration;
 
-  const queueLength = enqueueDirectives(directive);  
+  const queueMessage = enqueueDirectives(directive);
+
+  let colorMessage = "";
+  if (Array.isArray(colorNames)) {
+    for (let index = 0; index < colorNames.length; index++) {
+      const name = colorNames[index];
+      if (index > 0) {
+        if (index == colorNames.length - 1) {
+          colorMessage += (" and ");
+        } else {
+          colorMessage += (", ");
+        }
+      }
+      colorMessage += (name);
+    }
+  } else {
+    colorMessage = colorNames;
+  }
    
-  let message = `Changing the colors of ${elementName}. ${queueLength} Happy Holidays!`;
+  let message = `Setting colors of ${elementName} to ${colorMessage}. ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);    
 }
 
@@ -640,7 +674,7 @@ function setAllElementColorsByRgb(request, response) {
     return;
   }
   
-  const elementChannelNumber = elementInfo.channelNumber;
+  const elementChannelNumber = elementInfo.channel;
   if (elementChannelNumber === undefined || elementChannelNumber === null) {
     console.error(`webhook::setAllElementColorsByRgb - {elementName} is missing a channel number`);
     return;
@@ -690,15 +724,8 @@ function setAllElementColorsByRgb(request, response) {
 
   let channelData = [];
   for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
-    if (Array.isArray(colorNames)) {
-      colorIndex++;
-      if (colorIndex === colorNames.length) {
-        colorIndex = 0;
-      }
-  }
-
     for (let index = 0; index < rgb.length; index++) {
-      channelData[(3*(elementIndex - 1)) + index] = rgb[index];
+      channelData[(e*(elementIndex - 1)) + index] = rgb[index];
     }    
   }
   
@@ -710,9 +737,9 @@ function setAllElementColorsByRgb(request, response) {
   directive.channelData = channelData; 
   directive.duration = treeDirectiveDuration;
   
-  const queueLength = enqueueDirectives(directive);  
+  const queueMessage = enqueueDirectives(directive);  
   
-  let message = `Changing the colors of ${elementName} to ${red}, ${green}, ${blue}. ${queueMessage} Happy Holidays!`;
+  let message = `Changing the ${elementName} to ${red}, ${green}, ${blue}. ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);    
 }
 
@@ -721,22 +748,7 @@ function setAllElementColorsByRgb(request, response) {
 //////////////////////////////////////////////////////////////////////////////
 
 function doCommand(request, response) {
-  // console.log("setAllElementColorByRGB");
-  const elementName = request.parameters.elementName;
-  if (elementName === undefined || elementName == null) {
-    console.error('webhook::doCommand - missing elementName');
-    return;
-  }
-  // console.log("setAllElementColorsByRgb, elementName" + elementName);  
-
-  const elementInfo = elements[elementName];
-  if (elementInfo === undefined || elementInfo === null) {
-    console.error(`webhook::doCommand - ${elementName} is not a valid elemenet name.`);
-    return;
-  }
-    
-  const elementCount = elementInfo.count;
-  // console.log("doCommand, elementCount=" + elementCount);  
+  // console.log("doCommand");
   
   let commandName = request.parameters.commandName;
   if (commandName === undefined || commandName == null) {
@@ -744,25 +756,54 @@ function doCommand(request, response) {
     return;
   }
 
-  let commandInfo = commands[commandName];
+  let commandInfo = commands[commandName.toLowerCase()];
   if (commandInfo === undefined || commandInfo === null) {
-    console.error(`webhook::doCommand - ${elementName} is not a valid command name.`);
+    console.error(`webhook::doCommand - invalid commandName ${commandName}`);
+    return;
+  }
+
+  const elementName = request.parameters.elementName;
+  if (elementName === undefined || elementName == null) {
+    console.error('webhook::doCommand - missing elementName');
+    return;
+  }
+
+  const elementInfo = elements[elementName.toLowerCase()];
+  if (elementInfo === undefined || elementInfo === null) {
+    console.error(`webhook::doCommand - invalid elementName ${elementName}.`);
     return;
   }
   
-  let directives = [];
-  for (let index = 0; index < commandInfo.directives.length; index++) {
-    const prototype = commandInfo.directives[index];
+  const elementCount = elementInfo.count;
+  const elementType = elementInfo.elementType;
+  
+  const commandElementInfo = commandInfo[elementType.toLowerCase()];
+  if (commandElementInfo === undefined || commandElementInfo === null) {
+    console.error(`webhook::doCommand - there is no ${commandName} command for ${elementType}.`);
+    return;
+  }
+
+  console.log(`doCommand, commandName=${commandName} elementName=${elementName} type=${elementType}`);  
+  
+  let prototypes = [] = commandElementInfo.directives;
+  if (prototypes === undefined || prototypes === null) {
+    console.error(`webhook::doCommand - there is no directives for ${commandName} command for ${elementName}.`);
+    return;
+  }  
+
+  const directives = [];
+  for (let index = 0; index < prototypes.length; index++) {
+    const prototype = prototypes[index];
     directives.push( {
       elementName: elementName,
       universe: elementInfo.universe,
-      channelNumber: elementInfo.channelNumber,
+      channelNumber: elementInfo.channel,
       channelData: prototype.channelData,
       duration: prototype.duration
     })
   };
 
-  const queueLength = enqueueDirectives(directives);
+  const queueMessage = enqueueDirectives(directives);
   
   let message = `Making ${elementName} ${commandName}. ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);    
@@ -776,6 +817,13 @@ function cheer(request, response) {
   let teamName = request.parameters.teamName;
   if (teamName === undefined || teamName == null) {
     console.error('webhook::parseCheer - missing teamName');
+    return;
+  }
+
+  const elementName = 'trees';
+  const elementInfo = elements[elementName];
+  if (elementInfo === undefined || elementInfo === null) {
+    console.error(`webhook::doCommand - ${elementName} is not a valid elemenet name.`);
     return;
   }
    
@@ -794,19 +842,19 @@ function cheer(request, response) {
       return;
     }
     for (let rgbIndex = 0; rgbIndex < colorChannelData.length; rgbIndex++) {
-      channelData[(3*colorIndex) + rgbIndex] = colorChannelData[rgbIndex];
+      channelData[(elementInfo.channelCount*colorIndex) + rgbIndex] = colorChannelData[rgbIndex];
     }
   }
   
   let directive = {};
 
-  directive.elementName = elementName;
-  directive.universe = universe;
-  directive.channelNumber = elementChannelNumber;
+  directive.elementName = 'trees';
+  directive.universe = elementInfo.universe,
+  directive.channelNumber = elementInfo.channel,
   directive.channelData = channelData;
   directive.duration = treeDirectiveDuration;
 
-  const queueLength = enqueueDirectives(directive);
+  const queueMessage = enqueueDirectives(directive);
   
   let message = `Go ${teamName}! Watch the trees cheer with you! ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);
@@ -826,7 +874,7 @@ const actionHandlers = {
 
   'set.all.element.colors': setAllElementColors,
 
-  'set.all.element.colorsByRgb': setAllElementColorsByRgb,
+  'set.all.element.colors.rgb': setAllElementColorsByRgb,
 
   'do.command': doCommand,
   
@@ -888,14 +936,14 @@ try
     if (session == undefined || session == null) {
       session = "pseudoSession-" + ++sessionCounter;
     }
-    console.log(`request: session=${session}`);
+    // console.log(`request: session=${session}`);
 
     // create sessionData if needed
     let sessionData = getSessionData(session);
     if (sessionData === undefined) {
       sessionData = { sequence: sessionCounter++, creationTimestamp: new Date() };
       sessionDataCache[session] = sessionData;
-      console.log(`creatingSessionData: session=${session}`)
+      // console.log(`creatingSessionData: session=${session}`)
     }
 
     if (sessionDataCache.length > maxSessionCount) {
@@ -913,7 +961,7 @@ try
     actionHandlers[action]({ action, parameters, contexts, source, session }, response);
   } catch (error) {
     console.error("processing Dialogflow error=", error);
-    fillResponse(request, response, "Oh! I am not feeling well. I have a bad web hook.");
+    //fillResponse(request, response, "Oh! I am not feeling well. I have a bad web hook.");
   }
 }
 
@@ -960,7 +1008,7 @@ function fillResponse(request, response, responsePackage) {
 
   // Send the response to Dialogflow
   response.json(formattedResponse);
-  console.log('webhook fillResponse: ', formattedResponse);
+  console.log('webhook::fillResponse: ', formattedResponse);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -988,7 +1036,7 @@ server.use(bodyParser.json());
 
 server.post('/webhook', function(request, response) {
   try {
-    console.log('webhook post', 'body', request.body);
+    // console.log('webhook post', 'body', request.body);
 
     if (request.body.queryResult) {
       processV2Request(request, response);
