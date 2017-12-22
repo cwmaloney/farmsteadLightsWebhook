@@ -218,12 +218,11 @@ const commands = {
 //////////////////////////////////////////////////////////////////////////////
 
 const elements = {
-  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, channel: 1, channelCount: 3},
-  trees:   { elementType: "trees", queueName: "trees", count: 1, universe: 0, channel: 1, channelCount: 30 },
-  buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, channel: 113, channelCount: 8 },
-  kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, channel: 121, channelCount: 8 },
-  bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, channel: 129, channelCount: 8 },
-  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, channel: 137, channelCount: 8 }
+  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, startChannel: 1, channelsPerElement: 3},
+  buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, startChannel: 113, channelsPerElement: 8 },
+  kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, startChannel: 121, channelsPerElement: 8 },
+  bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, startChannel: 129, channelsPerElement: 8 },
+  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 137, channelsPerElement: 8 }
 };
 
 const treeDirectiveDuration = 5000;
@@ -513,12 +512,6 @@ function setElementColor(request, response) {
     return;
   }
   
-  const elementChannelNumber = elementInfo.channel;
-  if (elementChannelNumber === undefined || elementChannelNumber === null) {
-    console.error(`webhook::setElementColor - {elementName} is missing a channel number`);
-    return;
-  }
-
   let elementNumber = request.parameters.elementNumber;
   if (elementNumber === undefined || elementNumber == null) {
     elementNumber = 1;
@@ -547,8 +540,7 @@ function setElementColor(request, response) {
 
   directive.elementName = elementName;
   directive.universe = elementInfo.universe;
-  directive.channelNumber = elementChannelNumber
-                          + (elementInfo.channelCount)*(elementNumber - 1);
+  directive.channelNumber = elementInfo.startChannel + (elementInfo.channelsPerElement)*(elementNumber - 1);
   directive.channelData = colorChannelData;
   directive.duration = treeDirectiveDuration;
 
@@ -557,8 +549,8 @@ function setElementColor(request, response) {
   const queueMessage = enqueueDirectives(directive);
 
   let message = (!elementNumber)
-  ? `Changing the color of ${elementName} to ${colorName}. ${queueMessage} Happy Holidays!`
-  : `Changing the color of ${elementName} ${elementNumber} to ${colorName}. ${queueMessage} Happy Holidays!`;
+    ? `Changing the color of ${elementName} to ${colorName}. ${queueMessage} Happy Holidays!`
+    : `Changing the color of ${elementName} ${elementNumber} to ${colorName}. ${queueMessage} Happy Holidays!`;
 
   fillResponse(request, response, message);    
 }
@@ -582,17 +574,7 @@ function setAllElementColors(request, response) {
     console.error(`webhook::setAllElementColors - ${elementName} is not a valid elemenet name.`);
     return;
   }
-  
-  const elementChannelNumber = elementInfo.channel;
-  if (elementChannelNumber === undefined || elementChannelNumber === null) {
-    console.error(`webhook::setAllElementColors - {elementName} is missing a channel number`);
-    return;
-  }
-  // console.log("setAllElementColors, elementChannelNumber=" + elementChannelNumber);  
-  
-  const elementCount = elementInfo.channelCount;
-  // console.log("setAllElementColors, elementCount=" + elementCount);  
-  
+    
   const colorNames = request.parameters.colorNames;
   // console.log("setAllElementColors, colorNames=", colorNames);  
   if (colorNames === undefined || colorNames == null) {
@@ -606,8 +588,11 @@ function setAllElementColors(request, response) {
     colorName = colorNames;
   }
 
+  const elementCount = elementInfo.elementCount;
+  // console.log("setAllElementColors, elementCount=" + elementCount);  
+
   let channelData = [];
-  for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
+  for (let elementNumber = 1; elementNumber <= elementCount; elementNumber++) {
     if (Array.isArray(colorNames)) {
       colorIndex++;
       if (colorIndex === colorNames.length) {
@@ -625,16 +610,17 @@ function setAllElementColors(request, response) {
      return;
     }
 
-    for (let index = 0; index < colorChannelData.length; index++) {
-      channelData[(3*(elementIndex - 1)) + index] = colorChannelData[index];
-    }    
+    const elementStartIndex = (elementInfo.channelsPerElement)*(elementNumber - 1);
+    for (let rgbIndex = 0; rgbIndex < colorChannelData.length; rgbIndex++) {
+      channelData[elementStartIndex + rgbIndex] = colorChannelData[rgbIndex];
+    }
   }
   
   let directive = {};
 
   directive.elementName = elementName;
   directive.universe = elementInfo.universe;
-  directive.channelNumber = elementInfo.elementChannelNumber;
+  directive.channelNumber = elementInfo.startChannel;
   directive.channelData = channelData;
   directive.duration = treeDirectiveDuration;
   
@@ -681,14 +667,7 @@ function setAllElementColorsByRgb(request, response) {
     console.error(`webhook::setAllElementColorsByRgb - ${elementName} is not a valid elemenet name.`);
     return;
   }
-  
-  const elementChannelNumber = elementInfo.channel;
-  if (elementChannelNumber === undefined || elementChannelNumber === null) {
-    console.error(`webhook::setAllElementColorsByRgb - {elementName} is missing a channel number`);
-    return;
-  }
-  // console.log("setAllElementColorsByRgb, elementChannelNumber=" + elementChannelNumber);  
-  
+    
   const elementCount = elementInfo.count;
   // console.log("setAllElementColorByRGB, elementCount=" + elementCount);  
   
@@ -731,17 +710,18 @@ function setAllElementColorsByRgb(request, response) {
   const rgb = [ red, green, blue ];
 
   let channelData = [];
-  for (let elementIndex = 1; elementIndex <= elementCount; elementIndex++) {
-    for (let index = 0; index < rgb.length; index++) {
-      channelData[(e*(elementIndex - 1)) + index] = rgb[index];
-    }    
+  for (let elementNumber = 1; elementNumber <= elementCount; elementNumber++) {
+    const elementStartIndex = (elementInfo.channelsPerElement)*(elementNumber - 1);
+    for (let rgbIndex = 0; rgbIndex < rgb.length; index++) {
+      channelData[elementStartIndex + rgbIndex] = rgb[rgbIndex];
+    }
   }
   
   let directive = {};
 
   directive.elementName = elementName;
   directive.universe = universe;
-  directive.channelNumber = elementChannelNumber;
+  directive.channelNumber = elementInfo.startChannel;
   directive.channelData = channelData; 
   directive.duration = treeDirectiveDuration;
   
@@ -807,7 +787,7 @@ function doCommand(request, response) {
     const directive = {
       elementName: elementName,
       universe: elementInfo.universe,
-      channelNumber: elementInfo.channel,
+      channelNumber: elementInfo.startChannel,
       channelData: prototype.channelData,
       duration: prototype.duration
     };
@@ -829,41 +809,47 @@ function doCommand(request, response) {
 function cheer(request, response) {
   let teamName = request.parameters.teamName;
   if (teamName === undefined || teamName == null) {
-    console.error('webhook::parseCheer - missing teamName');
+    console.error('webhook::cheer - missing teamName');
     return;
   }
 
-  const elementName = 'trees';
+  const elementName = 'tree';
   const elementInfo = elements[elementName];
   if (elementInfo === undefined || elementInfo === null) {
-    console.error(`webhook::doCommand - ${elementName} is not a valid elemenet name.`);
+    console.error(`webhook::cheer - ${elementName} is not a valid elemenet name.`);
     return;
   }
    
   const colorNames = teamNameToColorsMap[teamName];
   if (!colorNames || colorNames == null) {
-    console.error(`webhook::parseCheer - Invalid team name ${teamName}.`);
+    console.error(`webhook::cheer - Invalid team name ${teamName}.`);
     return;
   }
 
   let channelData = [];
-  for (let colorIndex = 0; colorIndex < colorNames.length; colorIndex++) {
+  let colorIndex = -1;
+  for (let elementNumber = 1; elementNumber <= elementCount; elementNumber++) {
+    colorIndex++;
+    if (colorIndex === colorNames.length) {
+      colorIndex = 0;
+    }
     const colorName = colorNames[colorIndex];
     const colorChannelData = colorNameToChannelDataMap[colorName];
     if (colorChannelData === undefined) {
-      console.error(`webhook::parseCheer - invalid color ${colorName}`);
+      console.error(`webhook::cheer - invalid color ${colorName}`);
       return;
     }
+    const elementStartIndex = (elementInfo.channelsPerElement)*(colorIndex - 1);
     for (let rgbIndex = 0; rgbIndex < colorChannelData.length; rgbIndex++) {
-      channelData[(3*colorIndex) + rgbIndex] = colorChannelData[rgbIndex];
+      channelData[elementStartIndex + rgbIndex] = colorChannelData[rgbIndex];
     }
   }
   
   let directive = {};
 
-  directive.elementName = 'trees';
+  directive.elementName = elementName;
   directive.universe = elementInfo.universe,
-  directive.channelNumber = elementInfo.channel,
+  directive.channelNumber = elementInfo.startChannel,
   directive.channelData = channelData;
   directive.duration = treeDirectiveDuration;
 
@@ -887,6 +873,7 @@ function doSetChannelData(request, response) {
   const universe = request.parameters.universe;
   if (universe === undefined || universe == null) {
     console.error('webhook::doSetChannelData - missing universe');
+    let message = `webhook::doSetChannelData - missing universe`;
     return;
   }
   // console.log("setAllElementColorsByRgb, elementName" + elementName);  
@@ -894,6 +881,7 @@ function doSetChannelData(request, response) {
   const start = request.parameters.start;
   if (start === undefined || start === null) {
     console.error(`webhook::doSetChannelData - missing start`);
+    let message = `webhook::doSetChannelData - missing start`;
     return;
   }
 
@@ -902,24 +890,43 @@ function doSetChannelData(request, response) {
     end = start;
   }
 
-  const value = request.parameters.value;
-  if (value === undefined || value === null) {
+  const values = request.parameters.values;
+  if (values === undefined || values === null) {
     value = 255;
+  }
+  if (!Array.isArray(values)) {
+    values = [ value ];
   }
 
   if (start < 1 || start > 512) {
     console.error('webhook::doSetChannelData - bad start');
-    fillResponse(request, response)
+    let message = `webhook::doSetChannelData - bad start`;
+    fillResponse(request, response, message)
+    return;
   }
 
   if (end < 1 || end > 512) {
     console.error('webhook::doSetChannelData - bad end');
-    fillResponse(request, response)
+    let message = `webhook::doSetChannelData - bad end`;
+    fillResponse(request, response, message)
+    return;
   }
   
+  if (start > end) {
+    console.error('webhook::doSetChannelData - start > end');
+    let message = `webhook::doSetChannelData - start > end`;
+    fillResponse(request, response, message)
+    return;
+  }
+
   let channelData = [];
+  let valueIndex = -1;
   for (let index = 0; index < end-start+1; index++) {
-    channelData[start + index - 1] = value;
+    valueIndex++;
+    if (valueIndex == values.length) {
+      valueIndex = 0;
+    }
+    channelData[start + index - 1] = values[valueIndex];
   }    
   
   let directive = {};
@@ -930,8 +937,8 @@ function doSetChannelData(request, response) {
   
   setChannelData(directive); 
   
-  console.log(`doSetChannelData universe=${universe} start=${start} end=${end} value=${value}`);
-  let message = `doSetChannelData universe=${universe} start=${start} end=${end} value=${value}`;
+  console.log(`doSetChannelData universe=${universe} start=${start} end=${end} values=${values}`);
+  let message = `doSetChannelData universe=${universe} start=${start} end=${end} values=${values}`;
   fillResponse(request, response, message);    
 }
 
@@ -1087,6 +1094,7 @@ function fillResponse(request, response, responsePackage) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// the "start-up" code
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1138,6 +1146,10 @@ server.listen(port, function() {
   console.log("webhook server starting; listening on port " + port);
 });
 
+
+//////////////////////////////////////////////////////////////////////////////
+// test the elves
+//////////////////////////////////////////////////////////////////////////////
 
 // let counter = 0;
 

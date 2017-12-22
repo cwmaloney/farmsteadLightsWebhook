@@ -66,7 +66,7 @@ facts["animals"] = {
 // ];
 
 const welcomeMessage =
-  `Welcome to Farmstead Holiday Lights! 
+  `Welcome to Holiday Lights at Farmstead Lane! 
    I can tell you about the Holiday Light Show, the Farmstead, or farm animals.
    You can also change the color of the little trees or ask me to cheer for your favorite team.`
 
