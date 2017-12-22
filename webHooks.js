@@ -177,37 +177,37 @@ const commands = {
   flash: {
     elf : {
       directives: [
-        { channelData: [ 1, 2, 0, 4, 5, 6, 7, 8 ], duration: 250 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 250 },
-        { channelData: [ 1, 2, 0, 4, 5, 6, 7, 8 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 255, 255, 255, 255, 255 ], duration: 500 },
         { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 1, 2, 3, 4, 5, 6, 7, 8 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255, 255, 255, 255, 255 ], duration: 1000 },
         { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 1000 },
-        { channelData: [ 1, 2, 0, 0, 0, 0, 7, 0 ], duration: 5000 }
+        { channelData: [ 255, 255, 0, 255, 255, 255, 255, 255 ], duration: 2000 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 2000 },
+        { channelData: [ 255, 255, 0, 255, 255, 255, 255, 255 ], duration: 10000 }
       ]
     }
   },
   blink: {
     elf : {
       directives: [
-        { channelData: [ 1, 2, 0, 0, 0, 0, 7, 0 ], duration: 250 },
-        { channelData: [ 1, 0, 0, 0, 0, 0, 7, 0 ], duration: 250 },
-        { channelData: [ 1, 2, 0, 0, 0, 0, 7, 0 ], duration: 500 },
-        { channelData: [ 1, 0, 0, 0, 0, 0, 7, 0 ], duration: 500 },
-        { channelData: [ 1, 2, 0, 0, 0, 0, 7, 0 ], duration: 1000 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 7, 0 ], duration: 1000 }
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0  ], duration: 500 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0  ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0  ], duration: 10000 }
       ]
     }
   },
   smile: {
     elf: {
       directives: [
-        { channelData: [ 1, 2, 0, 0, 0, 0, 7, 0 ], duration: 500 },
-        { channelData: [ 1, 2, 0, 4, 0, 6, 0, 0 ], duration: 500 },
-        { channelData: [ 1, 2, 0, 0, 5, 6, 0, 0 ], duration: 500 },
-        { channelData: [ 1, 2, 0, 0, 0, 0, 8, 0 ], duration: 500 },
-        { channelData: [ 1, 2, 0, 0, 0, 0, 7, 8 ], duration: 1000 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 1000 }
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255, 255 ], duration: 2000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 10000 }
       ]
     }
   }
@@ -241,6 +241,9 @@ const universes = [
 //////////////////////////////////////////////////////////////////////////////
 
 function setChannelData(directive) {
+  if (directive.universe > 0) {
+    console.log(`setElementColor: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
+  }
   artnet.setChannelData(directive.universe,
     directive.channelNumber,
     directive.channelData);
@@ -809,7 +812,7 @@ function doCommand(request, response) {
     };
     directives.push(directive);
 
-    console.log(`doCommand: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
+    console.log(`doCommand: ${JSON.stringify(directives)}`);
   };
 
   const queueMessage = enqueueDirectives(directives);
@@ -1072,3 +1075,15 @@ const port = process.env.PORT || 8000;
 server.listen(port, function() {
   console.log("webhook server starting; listening on port " + port);
 });
+
+
+{
+  let channelData = [];
+  channelData.length = 512;
+  channelData.fill(255);
+  console.log(`channelData=${channelData}`);
+  artnet.setChannelData(1, 1, channelData);
+  artnet.send(1);
+  artnet.setChannelData(2, 1, channelData);
+  artnet.send(2);
+}
