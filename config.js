@@ -4,9 +4,9 @@
 /* eslint quote-props: ["error", "always"] */
 /* eslint quotes: ["error", "double"] */
 
-const facts = new Map();
+const factCategories = new Map();
 
-facts["show"] = {
+factCategories.set("show", {
   "name": "Holiday Lights at Deanna Rose Farmstead",
   "factPrefix": "Here's a fact about the Holiday Lights:",
   "facts": [
@@ -24,20 +24,20 @@ facts["show"] = {
     },
     "This show was created by Mark Calligari and his friends at Jolt Lighing."
   ]
-};
+});
 
-facts["farmstead"] = {
-      "name": "Deanna Rose Childern's Farmstead",
-      "factPrefix": "Here is a fact about the Deanna Rose Childern's Farmstead:",
-      "facts": [
-        "The Framstead opened on Memorial Day in 1978.",
-        "The Farmstead was renamed in 1985 to honor Deanna Sue Rose, an Overland Park police officer killed in the line of duty.",
-        "The Farmstead served 11,000 visitors in it's first year - 1978",
-        "Visitors can see more than 250 animals and birds at the Framestead."
-      ]
-    };
+factCategories.set("farmstead", {
+    "name": "Deanna Rose Childern's Farmstead",
+    "factPrefix": "Here is a fact about the Deanna Rose Childern's Farmstead:",
+    "facts": [
+      "The Framstead opened on Memorial Day in 1978.",
+      "The Farmstead was renamed in 1985 to honor Deanna Sue Rose, an Overland Park police officer killed in the line of duty.",
+      "The Farmstead served 11,000 visitors in it's first year - 1978",
+      "Visitors can see more than 250 animals and birds at the Framestead."
+    ]
+  });
 
-facts["animals"] = {
+factCategories.set("animals", {
   "name": "Farm animals",
   "factPrefix": "Here is a fact about the farm animals:",
   "facts": [
@@ -56,8 +56,8 @@ facts["animals"] = {
     "Goats give milk and will eat almost anything.",
     "Female chickens are called hens and lay eggs almost daily.",
     "Male chickens are called roosters and crow at sunrise and anytime they think you are sleeping.",
-  ]
-};
+    ]
+  });
 
 // const noInputPrompts = [
 //   "I didn't hear that.",
@@ -71,7 +71,7 @@ const welcomeMessage =
    You can also change the color of the little trees or ask me to cheer for your favorite team.`
 
 module.exports = {
-  facts,
+  factCategories,
   // noInputPrompts,
   welcomeMessage
 };

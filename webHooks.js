@@ -16,8 +16,7 @@ const bodyParser = require('body-parser');
 const { ArtNet } = require("./ArtNet.js");
 
 // load this app's configuration data
-//  categories, facts, messages, etc.
-const {facts, welcomeMessage} = require('./config.js');
+const {factCategories, welcomeMessage} = require('./config.js');
 
 // TODO - what is this?
 process.env.DEBUG = 'actions-on-google:*';
@@ -46,7 +45,7 @@ function getSessionData(session) {
 //////////////////////////////////////////////////////////////////////////////
 
 const teamNameToColorsMap = {
-  Chiefs: [ 'red', 'red', 'yellow', 'red', 'red', 'red', 'red', 'yellow', 'red', 'red'],
+  Chiefs: [ 'red', 'red', 'yellow', 'yellow', 'red', 'red', 'yellow', 'yellow', 'red', 'red'],
   Falcons: [ 'blue', 'gold', 'gold', 'gold', 'blue',
              'blue', 'gold', 'gold', 'gold', 'blue'],
   Gorillas: [ 'crimson', 'crimson', 'crimson', 'crimson', 'crimson',
@@ -57,8 +56,8 @@ const teamNameToColorsMap = {
                'orange', 'black', 'black', 'orange', 'orange'],
   Hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
                'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue'],
-  Huskies: [ 'purple', 'black', 'purple', 'white', 'purple',
-             'purple', 'white', 'purple', 'black', 'purple' ],
+  Huskies: [ 'purple', 'purple', 'white', 'white', 'purple',
+             'purple', 'black', 'black', 'purple', 'purple' ],
   Jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
   Mavericks: [ 'orange', 'orange', 'orange', 'orange', 'lightBlue',
                'lightBlue', 'orange', 'orange', 'orange', 'orange'],
@@ -177,11 +176,14 @@ const commands = {
   blink: {
     elf : {
       directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
       ]
     }
@@ -190,7 +192,9 @@ const commands = {
     elf : {
       directives: [
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
@@ -205,26 +209,39 @@ const commands = {
   flash: {
     elf : {
       directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 2000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 10000 }
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
       ]
     }
   },
   smile: {
     elf: {
       directives: [
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 2000 },
-        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 2000 },
-        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 5000 }
       ]
     }
@@ -258,10 +275,10 @@ const universes = [
 //////////////////////////////////////////////////////////////////////////////
 
 function setChannelData(directive) {
-  if (directive.universe > 0) {
-    console.log(`setChannelData: universe=${directive.universe} channel=${directive.channelNumber}
-      data=${directive.channelData}`);
-  }
+  // if (directive.universe > 0) {
+  //   console.log(`setChannelData: universe=${directive.universe} channel=${directive.channelNumber}
+  //     data=${directive.channelData}`);
+  // }
   artnet.setChannelData(directive.universe,
     directive.channelNumber,
     directive.channelData);
@@ -386,17 +403,6 @@ function createArrayOfIndexes(anArray) {
   return indexes;
 }
 
-// get catagory from configuration data
-function getCatagory(categoryName) {
-  for (let index = 0; index < configData.categories; index++) {
-    const category = configData.categories[index];
-    if (category.catgoryName == categoryNaem) {
-      return category;
-    }
-  }
-  return null;
-}
-
 // extract a random element from an array
 function extractRandomElement(anArray) {
   if (!anArray.length) {
@@ -423,35 +429,30 @@ function getUnusedFacts(request, categoryName) {
 
   if (sessionData.unusedFacts[categoryName] === undefined) {
     // Initialize unusedFacts with list of all facts
-    const category = facts[categoryName];
+    const category = factCategories.get(categoryName);
     sessionData.unusedFacts[categoryName] = createArrayOfIndexes(category.facts);
   }
+
+  console.log(
+    `cat=${categoryName} unused=${sessionData.unusedFacts[categoryName].length}`);
  
   return sessionData.unusedFacts[categoryName];
 }
 
 // does this session have any unfinished categories?
 function hasUnusedFacts(request, categoryName) {
-  const sessionData = getSessionData(request);
+  let unusedFacts = getUnusedFacts(request, categoryName);
 
-  if (!sessionData.unusedFacts) {
-    sessionData.unusedFacts = {};
-  }
-
-  if (!sessionData.unusedFacts.categoryName) {
-    return true;
-  }
-
-  return sessionData.unusedFacts.categoryName.length > 0;
+  return unusedFacts.length > 0;
 }
 
 // returns the names of unfinished categories
 function getUnfinishedCategories(request) {
   const unfinishedCategories = [];
-  for (category in configData.categories) {
-    const categoryName = catgory.name;
+  for (const categoryName of factCategories.keys()) {
+    console.log(`checking ${categoryName}`);
     if (hasUnusedFacts(request, categoryName)) {
-      unfinishedCategories.push(catgoryName);
+      unfinishedCategories.push(categoryName);
     }
   }
   return unfinishedCategories;
@@ -463,11 +464,13 @@ function getRandomFact(request, response) {
   if (categoryName == undefined || categoryName == null) {
     console.error('category name is missing');
     sendCategorySuggestions(request, response, categoryName);
+    return;
   }
-  const category = facts[categoryName];
+  const category = factCategories.get(categoryName);
   if (category == undefined|| category == null) {
     console.error(`${categoryName} category is unrecognized`);
     sendCategorySuggestions(request, response, categoryName);
+    return;
   }
 
   // get a fact
@@ -475,6 +478,7 @@ function getRandomFact(request, response) {
   const element = extractRandomElement(unusedFactsForCategory);
   if (element == null || element == undefined) {
     sendCategorySuggestions(request, response, categoryName);
+    return;
   }
   sendFact(request, response, category, category.facts[element]);
 }
@@ -502,15 +506,17 @@ function sendFact(request, response, category, fact) {
 function sendCategorySuggestions(request, response, categoryName) {
   const unfinishedCategories = getUnfinishedCategories(request);
   if (unfinishedCategories.length == 0) {
-    fillResponse("Looks like you've heard all my random facts!");
+    fillResponse(request, response,
+      "Looks like you've heard all my random facts! Try asking me questions.");
+    return;
   }
   
   if (categoryName) {
-    fillResponse(
+    fillResponse(request, response, 
       `You have heard everything I know about ${categoryName}`);
     }
     else {
-      fillResponse(`I'm confused.`);    
+      fillResponse(request, response, `Sorry... I'm confused.`);    
     }
 }
 
@@ -663,7 +669,7 @@ function setAllElementColors(request, response) {
    
 
   // console.log(`setAllElementColors: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
-  let message = `Setting colors of ${elementName} to ${colorMessage}. ${queueMessage} Happy Holidays!`;
+  let message = `Setting colors of ${elementName}s to ${colorMessage}. ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);    
 }
 
@@ -746,7 +752,7 @@ function setAllElementColorsByRgb(request, response) {
   const queueMessage = enqueueDirectives(directive);  
   
   // console.log(`setAllElementColorsByRgb: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
-  let message = `Changing the ${elementName} to ${red}, ${green}, ${blue}. ${queueMessage} Happy Holidays!`;
+  let message = `Changing the ${elementName}s to ${red}, ${green}, ${blue}. ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);    
 }
 
@@ -790,7 +796,7 @@ function doCommand(request, response) {
     return;
   }
 
-  console.log(`doCommand, commandName=${commandName} elementName=${elementName} type=${elementType}`);  
+  //console.log(`doCommand, commandName=${commandName} elementName=${elementName} type=${elementType}`);  
   
   let prototypes = [] = commandElementInfo.directives;
   if (prototypes === undefined || prototypes === null) {
@@ -811,7 +817,7 @@ function doCommand(request, response) {
     };
     directives.push(directive);
 
-    console.log(`doCommand: ${JSON.stringify(directives)}`);
+    // console.log(`doCommand: ${JSON.stringify(directives)}`);
   };
 
   const queueMessage = enqueueDirectives(directives);
@@ -858,7 +864,7 @@ function cheer(request, response) {
       console.error(`webhook::cheer - invalid color ${colorName}`);
       return;
     }
-    const elementStartIndex = (elementInfo.channelsPerElement)*(colorIndex - 1);
+    const elementStartIndex = (elementInfo.channelsPerElement)*(elementNumber - 1);
     for (let rgbIndex = 0; rgbIndex < colorChannelData.length; rgbIndex++) {
       channelData[elementStartIndex + rgbIndex] = colorChannelData[rgbIndex];
     }
@@ -982,7 +988,7 @@ const actionHandlers = {
   'get.random.fact' : getRandomFact,
 
   'check.webhook.status': (request, response) => {
-    let message = `The Farmstead Light's webhook server is running! queues=${JSON.stringify(directiveQueues)}`;
+    let message = `The Farmstead Light's webhook server is running!`;
     fillResponse(request, response, message);
   },
 
@@ -1109,7 +1115,7 @@ function fillResponse(request, response, responsePackage) {
 
   // Send the response to Dialogflow
   response.json(formattedResponse);
-  console.log('webhook::fillResponse: ', formattedResponse);
+  console.log(formattedResponse);
 }
 
 //////////////////////////////////////////////////////////////////////////////
