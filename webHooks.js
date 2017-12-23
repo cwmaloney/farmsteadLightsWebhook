@@ -16,7 +16,16 @@ const bodyParser = require('body-parser');
 const { ArtNet } = require("./ArtNet.js");
 
 // load this app's configuration data
-const {factCategories, welcomeMessage} = require('./config.js');
+const {
+  teamNameToColorsMap,
+  colorNameToChannelDataMap,
+  commands,
+  elements,
+  treeDirectiveDuration,
+  maxRequestsPerSession,
+  universes,
+  factCategories
+} = require('./config.js');
 
 // TODO - what is this?
 process.env.DEBUG = 'actions-on-google:*';
@@ -24,249 +33,44 @@ process.env.DEBUG = 'actions-on-google:*';
 //////////////////////////////////////////////////////////////////////////////
 // sessionDataCache is keyed by session id from Dialogflow
 // The session data object is the value of the map.
-// The session data object contains a sequence number and creation data. This
-// library uses these trackthe age of the session.
+// The session data object contains a sequence number, creation data, and last used date.
 const sessionDataCache = new Map();
-const maxSessionCount = 100;
+const maxSessionCount = 2;
 let sessionCounter = 0;
 
-function getSessionData(session) {
-  // console.log(`getSessionData: session=${session} data=${sessionDataCache[session]}`);
-
-  let sessionData = sessionDataCache[session];
-  if (sessionData === undefined) {
-    sessionData = {};
-    sessionDataCache[session] = sessionData;
+function removeOldSessionsFromCache() {
+  // remove old sessions when the cache is full
+  while (sessionDataCache.length > maxSessionCount) {
+    let sessiondIdToDelete = undefined;
+    let sessionDataToDelete = undefined;
+    for (const sessionId of sessionDataCache.keys()) {
+      // delete oldest session
+      const sessionData = sessionDataCache.get(sessionId);
+      if (sessionData.lastUsedTimpestamp < sessionToDelete.lastUsedTimpestamp) {
+        sessionIdToDelete = sessionId;
+        sessionDataToDelete = sessionData;
+      }
+    }
+    if (sessiondIdToDelete) {
+      console.log(`removing oldest sessionData: sessionId=${sessiondIdToDelete}`)
+      sessionDataCache.delete(sessiondIdToDelete);
+    }
   }
+}
+
+function getSessionData(sessionId) {
+  let sessionData = sessionDataCache.get(sessionId);
+  if (sessionData === undefined) {
+    sessionData = { sequence: sessionCounter++, creationTimestamp: new Date(), requests: 0 };
+    sessionDataCache[sessionId] = sessionData;
+    console.log(`creatingSessionData: sessionId=${sessionId}`)
+  }
+  // console.log(`getSessionData: session=${sessionId} data=${sessionDataCache[sessionId]}`);
+
+  removeOldSessionsFromCache();
 
   return sessionData;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-
-const teamNameToColorsMap = {
-  Chiefs: [ 'red', 'red', 'yellow', 'yellow', 'red', 'red', 'yellow', 'yellow', 'red', 'red'],
-  Falcons: [ 'blue', 'gold', 'gold', 'gold', 'blue',
-             'blue', 'gold', 'gold', 'gold', 'blue'],
-  Gorillas: [ 'crimson', 'crimson', 'crimson', 'crimson', 'crimson',
-              'gold', 'gold', 'gold', 'gold', 'gold'],
-  Grinch: [ 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen',
-            'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen' ],
-  Halloween: [ 'orange', 'orange', 'black', 'black', 'orange',
-               'orange', 'black', 'black', 'orange', 'orange'],
-  Hawks: [ 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue',
-               'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue', 'royalBlue'],
-  Huskies: [ 'purple', 'purple', 'white', 'white', 'purple',
-             'purple', 'black', 'black', 'purple', 'purple' ],
-  Jayhawks: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
-  Mavericks: [ 'orange', 'orange', 'orange', 'orange', 'lightBlue',
-               'lightBlue', 'orange', 'orange', 'orange', 'orange'],
-  HornedFrogs: [ 'hornedFrogPurple', 'hornedFrogPurple', 'hornedFrogPurple',
-                 'hornedFrogPurple', 'white', 'white', 'hornedFrogPurple',
-                 'hornedFrogPurple', 'hornedFrogPurple', 'hornedFrogPurple' ],
-  Kangaroos: [ 'blue', 'blue', 'gold', 'gold', 'blue',
-               'blue', 'gold', 'gold', 'blue', 'blue'],
-  Pioneers: [ 'blue', 'blue', 'blue', 'blue', 'fuchsia',
-              'fuchsia', 'blue', 'blue', 'blue', 'blue',],
-  Nebraska: [ 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red' ],
-  Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
-              'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
-  Rainbow: [ 'darkRed', 'red', 'orangeRed', 'orange', 'yellow',
-             'chartreuse', 'green', 'blue', 'indigo', 'violet'],
-  Reindeer: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
-              'darkBrown', 'darkBrown', 'darkBrown', 'red', 'black'],
-  Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
-  Rudolph: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
-             'darkBrown', 'darkBrown', 'darkBrown', 'red', 'black'],
-  Santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
-  Sporting: [ 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo',
-              'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo', 'sportingBlue', 'darkIndigo'],
-  Snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
-  Tigers: [ 'gold', 'gold', 'black', 'black', 'gold',
-            'gold', 'black', 'black', 'gold', 'gold'],
-  USA: [ 'red', 'red', 'red', 'red', 'white', 'white', 'blue', 'blue', 'blue', 'blue' ],
-  Wildcats: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
-              'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ]
-};
-
-const colorNameToChannelDataMap = {
-  on: [ 255, 255, 255 ],
-  white: [ 255, 255, 255 ],
-  snow: [ 225, 225, 225 ],
-  celadon: [ 162, 215, 165 ],
-  gray: [ 32, 32, 32 ],
-  silver: [ 175, 175, 175 ],
-  
-  red: [ 255, 0, 0 ],
-  crimson: [ 220, 20, 60 ],
-  darkRed: [20, 0, 0],
-
-  pink: [ 255, 102, 178 ],
-  darkPink: [ 175, 75, 140 ],
-  maroon: [ 128, 0, 0],
-  fuchsia: [ 255, 0, 255 ],
-  magenta: [ 255, 0, 255 ],
-  
-  orange: [ 255, 127, 0 ],
-  orangeRed: [255, 69, 0],
-
-  yellow: [ 255, 255, 0 ],
-
-  brown: [ 32, 20, 11 ],
-  darkBrown: [ 20, 13, 5 ],
-  gold: [ 215, 185, 0 ],
-
-  yellowGreen: [ 154, 205, 50 ],
-  chartreuse: [ 63, 128, 0 ],
-
-  green:[ 0, 255, 0 ],
-  darkGreen: [ 0, 30, 0 ],
-  grinchGreen: [ 40, 190, 0 ],
-  olive: [ 45, 65, 0 ],
-  turquoise: [ 64, 224, 204 ],
-  darkTurquoise: [ 0, 206, 209 ],
-  lime: [127, 255, 0],
-  teal: [ 0, 128, 128],
-
-  blueGreen: [ 13, 152, 186 ],
-  cyan: [ 0, 250, 250],
-  darkCyan: [ 0, 90, 90 ],
- 
-  blue: [ 0, 0, 255 ],
-  lightBlue: [ 107, 164, 184 ],
-  cornFlowerBlue: [ 70, 119, 207 ],
-  darkBlue: [ 0, 0, 30],
-  royalBlue: [ 65, 105, 225],
-  navy: [0, 0, 25],
-  midnightBlue: [ 25, 25, 112 ],
-  sportingBlue: [ 147, 177, 215 ],
-  
-  indigo: [ 28, 0, 64 ],
-  darkIndigo: [ 7, 0, 16 ],
-
-  blueViolet: [ 138, 43, 226 ],
-  
-  purple: [ 75, 0, 128 ],
-  royalPurple: [ 102, 51, 153 ],
-  hornedFrogPurple: [ 77, 25, 121 ],
-
-  violet: [ 139, 0, 255 ],
-  darkViolet: [ 35, 0, 58 ],
-
-  black: [ 0, 0, 0 ],
-  off:  [ 0, 0, 0 ]
-};
-
-//////////////////////////////////////////////////////////////////////////////
-// Commands that can be sent to elements
-/////////////////////////////////////////////////////////////////////////////
-    /* -----
-    Elf parts
-      1 - body/head/outline
-      2 - eyes
-      3 - unused - future
-      4 - top mouth
-      5 - middle mouth
-      6 - bottom mouth
-      7 - open mouth
-      8 - ooh circle mouth
-    ----- */
-
-const commands = {
-  blink: {
-    elf : {
-      directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
-      ]
-    }
-  },
-  party: {
-    elf : {
-      directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 2000 },
-        { channelData: [ 255,   0, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 10000 }
-      ]
-    }
-  },
-  flash: {
-    elf : {
-      directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
-      ]
-    }
-  },
-  smile: {
-    elf: {
-      directives: [
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 5000 }
-      ]
-    }
-  }
-};
-
-//////////////////////////////////////////////////////////////////////////////
-// DMX mapping
-//////////////////////////////////////////////////////////////////////////////
-
-const elements = {
-  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, startChannel: 1, channelsPerElement: 3},
-  buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, startChannel: 97, channelsPerElement: 8 },
-  kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, startChannel: 105, channelsPerElement: 8 },
-  bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, startChannel: 113, channelsPerElement: 8 },
-  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 121, channelsPerElement: 8 }
-};
-
-const treeDirectiveDuration = 5000;
-
-const universes = [
-  { universe: 0, "address": "10.0.0.18" },
-  { universe: 1, "address": "10.7.90.1" },
-  { universe: 2, "address": "10.7.90.2" }
-];
 
 //////////////////////////////////////////////////////////////////////////////
 // DirectiveQueue
@@ -295,6 +99,17 @@ class DirectiveQueue {
 
   getSize() {
     return this.newestIndex - this.oldestIndex;
+  }
+
+  getCountForSession(sessionId) {
+    let count = 0;
+    for (const index = this.oldestIndex; index < this.newestIndex; index++) {
+      directive = this.directives[index];
+      if (directive.sessionId === sessionId) {
+        count++;
+      }
+    }
+    return count;
   }
 
   enqueue(directive) {
@@ -384,6 +199,18 @@ function enqueueOneDirective(directive) {
   return '';
 }
 
+function checkOverUse(sessionId, elementName) {
+  let message = null;
+
+  const queue = getQueueForElement(elementName);
+
+  if (queue.getCountForSession(sessionId) > maxRequestsPerSession) {
+    message = `You have two many requests in the queue now.  Please try again in a few minutes.`;
+  }
+
+  return message;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // The ArtNet interface
 //////////////////////////////////////////////////////////////////////////////
@@ -421,7 +248,7 @@ function extractRandomElement(anArray) {
 // This also stores the list of unused facts for the category in the app data
 // api.ai maintains app.data as "session data"
 function getUnusedFacts(request, categoryName) {
-  const sessionData = getSessionData(request);
+  const sessionData = getSessionData(request.sessionId);
   
   if (sessionData.unusedFacts === undefined) {
     sessionData.unusedFacts = {};
@@ -439,23 +266,18 @@ function getUnusedFacts(request, categoryName) {
   return sessionData.unusedFacts[categoryName];
 }
 
-// does this session have any unfinished categories?
-function hasUnusedFacts(request, categoryName) {
-  let unusedFacts = getUnusedFacts(request, categoryName);
-
-  return unusedFacts.length > 0;
-}
-
 // returns the names of unfinished categories
-function getUnfinishedCategories(request) {
-  const unfinishedCategories = [];
+function getUnfinishedCategoryNames(request) {
+  const unfinishedCategoryNames = [];
+
   for (const categoryName of factCategories.keys()) {
     console.log(`checking ${categoryName}`);
-    if (hasUnusedFacts(request, categoryName)) {
-      unfinishedCategories.push(categoryName);
+    if (getUnusedFacts(request, categoryName) > 0) {
+      unfinishedCategoryNames.push(categoryName);
     }
   }
-  return unfinishedCategories;
+
+  return unfinishedCategoryNames;
 }
 
 function getRandomFact(request, response) {
@@ -504,20 +326,14 @@ function sendFact(request, response, category, fact) {
 }
 
 function sendCategorySuggestions(request, response, categoryName) {
-  const unfinishedCategories = getUnfinishedCategories(request);
-  if (unfinishedCategories.length == 0) {
+  const unfinishedCategoryNames = getUnfinishedCategoryNames(request);
+  if (unfinishedCategoryNames.length == 0) {
     fillResponse(request, response,
       "Looks like you've heard all my random facts! Try asking me questions.");
     return;
   }
-  
-  if (categoryName) {
-    fillResponse(request, response, 
-      `You have heard everything I know about ${categoryName}`);
-    }
-    else {
-      fillResponse(request, response, `Sorry... I'm confused.`);    
-    }
+  fillResponse(request, response, 
+    `You have heard everything I know about ${categoryName}. Ask me about ${unfinishedCategories[0]}.`);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -530,10 +346,17 @@ function setElementColor(request, response) {
     console.error('webhook::setElementColor - missing elementName');
     return;
   }
+  
   const elementInfo = elements[elementName];
   if (elementInfo === undefined || elementInfo === null) {
     console.error(`webhook::setElementColor - ${elementName} is not a valid elemenet name.`);
     return;
+  }
+
+  const overUseMessage = checkOverUse(request.sessionId, elementName);
+  if (oversUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, message);
+    return; 
   }
   
   let elementNumber = request.parameters.elementNumber;
@@ -562,6 +385,7 @@ function setElementColor(request, response) {
 
   let directive = {};
 
+  directive.sessionId = getSessionId(request);
   directive.elementName = elementName;
   directive.universe = elementInfo.universe;
   directive.channelNumber = elementInfo.startChannel + (elementInfo.channelsPerElement)*(elementNumber - 1);
@@ -597,6 +421,12 @@ function setAllElementColors(request, response) {
   if (elementInfo === undefined || elementInfo === null) {
     console.error(`webhook::setAllElementColors - ${elementName} is not a valid elemenet name.`);
     return;
+  }
+
+  const overUseMessage = checkOverUse(request.sessionId, elementName);
+  if (oversUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, message);
+    return; 
   }
     
   const colorNames = request.parameters.colorNames;
@@ -642,6 +472,7 @@ function setAllElementColors(request, response) {
   
   let directive = {};
 
+  directive.sessionId = getSessionId(request);
   directive.elementName = elementName;
   directive.universe = elementInfo.universe;
   directive.channelNumber = elementInfo.startChannel;
@@ -690,6 +521,12 @@ function setAllElementColorsByRgb(request, response) {
   if (elementInfo === undefined || elementInfo === null) {
     console.error(`webhook::setAllElementColorsByRgb - ${elementName} is not a valid elemenet name.`);
     return;
+  }
+
+  const overUseMessage = checkOverUse(request.sessionId, elementName);
+  if (oversUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, message);
+    return; 
   }
   
   let red = request.parameters.red;
@@ -743,6 +580,7 @@ function setAllElementColorsByRgb(request, response) {
   
   let directive = {};
 
+  directive.sessionId = getSessionId(request);
   directive.elementName = elementName;
   directive.universe = elementInfo.universe;
   directive.channelNumber = elementInfo.startChannel;
@@ -786,6 +624,12 @@ function doCommand(request, response) {
     console.error(`webhook::doCommand - invalid elementName ${elementName}.`);
     return;
   }
+
+  const overUseMessage = checkOverUse(request.sessionId, elementName);
+  if (oversUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, message);
+    return; 
+  }
   
   const elementCount = elementInfo.count;
   const elementType = elementInfo.elementType;
@@ -804,11 +648,13 @@ function doCommand(request, response) {
     return;
   }  
 
+  let sessionId = getSessionId(request);
   const directives = [];
   for (let index = 0; index < prototypes.length; index++) {
     const prototype = prototypes[index];
 
     const directive = {
+      sessionId: sessionId,
       elementName: elementName,
       universe: elementInfo.universe,
       channelNumber: elementInfo.startChannel,
@@ -843,6 +689,12 @@ function cheer(request, response) {
     console.error(`webhook::cheer - ${elementName} is not a valid elemenet name.`);
     return;
   }
+
+  const overUseMessage = checkOverUse(request.sessionId, elementName);
+  if (oversUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, message);
+    return; 
+  }
    
   const colorNames = teamNameToColorsMap[teamName];
   if (!colorNames || colorNames == null) {
@@ -870,8 +722,11 @@ function cheer(request, response) {
     }
   }
   
+  let sessionId = getSessionId(request);
+
   let directive = {};
 
+  directive.sessionId = sessionId;
   directive.elementName = elementName;
   directive.universe = elementInfo.universe,
   directive.channelNumber = elementInfo.startChannel,
@@ -1037,35 +892,22 @@ try
     let source = (request.body.originalDetectIntentRequest) ? request.body.originalDetectIntentRequest.source : undefined;
 
     // Get the session ID to differentiate calls from different users
-    let session = (request.body.session) ? request.body.session : undefined;
+    let sessionId = (request.body.session) ? request.body.session : undefined;
 
     // create a session id if needed
-    if (session == undefined || session == null) {
-      session = "pseudoSession-" + ++sessionCounter;
+    if (sessionId == undefined || session == null) {
+      sessionId = "pseudoSession-" + ++sessionCounter;
     }
-    // console.log(`request: session=${session}`);
+    // console.log(`request: sessionId=${sessionId}`);
 
-    // create sessionData if needed
-    let sessionData = getSessionData(session);
-    if (sessionData === undefined) {
-      sessionData = { sequence: sessionCounter++, creationTimestamp: new Date() };
-      sessionDataCache[session] = sessionData;
-      // console.log(`creatingSessionData: session=${session}`)
-    }
-
-    if (sessionDataCache.length > maxSessionCount) {
-      // delete oldest session
-      let toDelete = undefined;
-      sessionDataCache.forEach((value, key) =>
-        { if (value.sequence < oldest) toDelete = key; } );
-      if (toDelete) {
-        console.log(`removing oldest sessionData: session=${toDelete}`)
-        sessionDataCache.delete(toDelete);
-      }
-    }
+    // get the sessiondata, this will create sessionData if needed
+    let sessionData = getSessionData(sessionId);
+  
+    sessionData.requests++;
+    sessionData.lastUsedTimeStamp = new Date();
 
     // Run the proper handler function to handle the request from Dialogflow
-    actionHandlers[action]({ action, parameters, contexts, source, session }, response);
+    actionHandlers[action]( { action, parameters, contexts, source, sessionId }, response);
   } catch (error) {
     console.error("processing Dialogflow error=", error);
     //fillResponse(request, response, "Oh! I am not feeling well. I have a bad web hook.");

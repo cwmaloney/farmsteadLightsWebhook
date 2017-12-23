@@ -4,6 +4,255 @@
 /* eslint quote-props: ["error", "always"] */
 /* eslint quotes: ["error", "double"] */
 
+
+//////////////////////////////////////////////////////////////////////////////
+// teams
+//////////////////////////////////////////////////////////////////////////////
+
+const teamNameToColorsMap = {
+  Baylor: [ 'green', 'green', 'gold', 'gold', 'green', 'green', 'gold', 'gold', 'green', 'green'],
+  BVNW: [ 'purple', 'purple', 'white', 'white', 'purple',
+          'purple', 'black', 'black', 'purple', 'purple' ],
+  Chiefs: [ 'red', 'red', 'yellow', 'yellow', 'red', 'red', 'yellow', 'yellow', 'red', 'red'],
+  Grinch: [ 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen',
+            'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen', 'grinchGreen' ],
+  Halloween: [ 'orange', 'orange', 'black', 'black', 'orange',
+               'orange', 'black', 'black', 'orange', 'orange'],
+  Iowa: ["gold", "gold", "black", "black", "gold", "gold", "black", "black", "gold", "gold"],          
+  ISU: ['red', 'red', 'gold', 'gold','red', 'red', 'gold', 'gold','red', 'red'],
+  KSU: [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
+              'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
+  KU: [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
+  Mavericks: [ 'orange', 'orange', 'orange', 'orange', 'lightBlue',
+              'lightBlue', 'orange', 'orange', 'orange', 'orange'],
+  MNU: [ 'blue', 'blue', 'blue', 'blue', 'fuchsia',
+              'fuchsia', 'blue', 'blue', 'blue', 'blue',],
+  MU: [ 'gold', 'gold', 'black', 'black', 'gold',
+              'gold', 'black', 'black', 'gold', 'gold'],
+  Nebraska: [ 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red' ],
+  Neptunes: [ 'darkBlue', 'darkBlue', 'white', 'white', 'darkBlue',
+              'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
+  "Olathe South": [ 'blue', 'gold', 'gold', 'gold', 'blue',
+              'blue', 'gold', 'gold', 'gold', 'blue'],
+  Oklahoma: [ "crimson", "crimson", "cream", "cream", "crimson", "crimson", "cream", "cream", "crimson", "crimson" ],
+  OSU: [ "orange", "orange", "black", "black", "orange", "orange", "black", "black", "orange", "orange" ],
+  PSU: [ 'crimson', 'crimson', 'gold', 'gold', 'crimson',
+              'crimson', 'gold', 'gold', 'crimson', 'crimson'],
+  Rainbow: [ 'darkRed', 'red', 'orangeRed', 'orange', 'yellow',
+             'chartreuse', 'green', 'blue', 'indigo', 'violet'],
+  Reindeer: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
+              'darkBrown', 'darkBrown', 'darkBrown', 'red', 'black'],
+  Rockhurst: [ 'royalBlue', 'royalBlue', 'white', 'white', 'royalBlue',
+               'royalBlue', 'white', 'white', 'royalBlue', 'royalBlue'],
+  Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+  Rudolph: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
+             'darkBrown', 'darkBrown', 'darkBrown', 'red', 'black'],
+  Santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
+  Snow: [ 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow', 'snow'],
+  Sporting: [ 'darkIndigo', 'darkIndigo', 'sportingBlue', 'sportingBlue', 'darkIndigo', 
+              'darkIndigo', 'sportingBlue', 'sportingBlue', 'darkIndigo', 'darkIndigo'],
+  "STA Saints": [ 'blue', 'blue', 'gold','gold', 'blue', 'blue', 'gold','gold','blue', 'blue' ],
+  TCU: [ 'hornedFrogPurple', 'hornedFrogPurple', 'white', 'white', 'hornedFrogPurple',
+         'hornedFrogPurple', 'white', 'white', 'hornedFrogPurple', 'hornedFrogPurple' ],
+  Texas: [ 'orange', 'orange', 'white', 'white', 'orange',
+           'orange', 'white', 'white', 'orange', 'orange'],
+  TTU: [ 'scarlet', 'scarlet', 'black', 'black', 'scarlet',
+         'scarlet', 'black', 'black', 'scarlet', 'scarlet' ],
+  UMKC: [ 'blue', 'blue', 'gold', 'gold', 'blue', 'blue', 'gold', 'gold', 'blue', 'blue'],
+  USA: [ 'red', 'red', 'red', 'red', 'white', 'white', 'blue', 'blue', 'blue', 'blue' ],
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// colors
+//////////////////////////////////////////////////////////////////////////////
+
+const colorNameToChannelDataMap = {
+  on: [ 255, 255, 255 ],
+  white: [ 255, 255, 255 ],
+  snow: [ 225, 225, 225 ],
+  celadon: [ 162, 215, 165 ],
+  gray: [ 32, 32, 32 ],
+  silver: [ 175, 175, 175 ],
+  
+  red: [ 255, 0, 0 ],
+  crimson: [ 0x84, 0x16, 0x17],
+  //crimson: [ 220, 20, 60 ],
+  darkRed: [20, 0, 0],
+  scarlet: [ 204, 0 , 0 ],
+
+  pink: [ 255, 102, 178 ],
+  darkPink: [ 175, 75, 140 ],
+  maroon: [ 128, 0, 0],
+  fuchsia: [ 255, 0, 255 ],
+  magenta: [ 255, 0, 255 ],
+  
+  orange: [ 255, 127, 0 ],
+  orangeRed: [255, 69, 0],
+
+  yellow: [ 255, 255, 0 ],
+
+  cream: [ 0xFD, 0xF9, 0xD8],
+  brown: [ 32, 20, 11 ],
+  darkBrown: [ 20, 13, 5 ],
+  gold: [ 215, 185, 0 ],
+
+  yellowGreen: [ 154, 205, 50 ],
+  chartreuse: [ 63, 128, 0 ],
+
+  green:[ 0, 255, 0 ],
+  darkGreen: [ 0, 30, 0 ],
+  grinchGreen: [ 40, 190, 0 ],
+  olive: [ 45, 65, 0 ],
+  turquoise: [ 64, 224, 204 ],
+  darkTurquoise: [ 0, 206, 209 ],
+  lime: [127, 255, 0],
+  teal: [ 0, 128, 128],
+
+  blueGreen: [ 13, 152, 186 ],
+  cyan: [ 0, 250, 250],
+  darkCyan: [ 0, 90, 90 ],
+ 
+  blue: [ 0, 0, 255 ],
+  lightBlue: [ 107, 164, 184 ],
+  cornFlowerBlue: [ 70, 119, 207 ],
+  darkBlue: [ 0, 0, 30],
+  royalBlue: [ 65, 105, 225],
+  navy: [0, 0, 25],
+  midnightBlue: [ 25, 25, 112 ],
+  sportingBlue: [ 147, 177, 215 ],
+  
+  indigo: [ 28, 0, 64 ],
+  darkIndigo: [ 7, 0, 16 ],
+
+  blueViolet: [ 138, 43, 226 ],
+  
+  purple: [ 75, 0, 128 ],
+  royalPurple: [ 102, 51, 153 ],
+  hornedFrogPurple: [ 77, 25, 121 ],
+
+  violet: [ 139, 0, 255 ],
+  darkViolet: [ 35, 0, 58 ],
+
+  black: [ 0, 0, 0 ],
+  off:  [ 0, 0, 0 ]
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// Commands that can be sent to elements
+/////////////////////////////////////////////////////////////////////////////
+    /* -----
+    Elf parts
+      1 - body/head/outline
+      2 - eyes
+      3 - unused - future
+      4 - top mouth
+      5 - middle mouth
+      6 - bottom mouth
+      7 - open mouth
+      8 - ooh circle mouth
+    ----- */
+
+const commands = {
+  blink: {
+    elf : {
+      directives: [
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
+      ]
+    }
+  },
+  party: {
+    elf : {
+      directives: [
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 2000 },
+        { channelData: [ 255,   0, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 10000 }
+      ]
+    }
+  },
+  flash: {
+    elf : {
+      directives: [
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
+      ]
+    }
+  },
+  smile: {
+    elf: {
+      directives: [
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 5000 }
+      ]
+    }
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// DMX mapping
+//////////////////////////////////////////////////////////////////////////////
+
+const elements = {
+  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, startChannel: 1, channelsPerElement: 3},
+  buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, startChannel: 97, channelsPerElement: 8 },
+  kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, startChannel: 105, channelsPerElement: 8 },
+  bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, startChannel: 113, channelsPerElement: 8 },
+  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 121, channelsPerElement: 8 }
+};
+
+const treeDirectiveDuration = 5000;
+const maxRequestsPerSession = 2;
+
+const universes = [
+  { universe: 0, "address": "10.0.0.18" },
+  { universe: 1, "address": "10.7.90.1" },
+  { universe: 2, "address": "10.7.90.2" }
+];
+
+//////////////////////////////////////////////////////////////////////////////
+// facts
+//////////////////////////////////////////////////////////////////////////////
+
 const factCategories = new Map();
 
 factCategories.set("show", {
@@ -59,19 +308,13 @@ factCategories.set("animals", {
     ]
   });
 
-// const noInputPrompts = [
-//   "I didn't hear that.",
-//   "If you're still there, say that again.",
-//   "We can stop now. See you soon."
-// ];
-
-const welcomeMessage =
-  `Welcome to Holiday Lights at Farmstead Lane! 
-   I can tell you about the Holiday Light Show, the Farmstead, or farm animals.
-   You can also change the color of the little trees or ask me to cheer for your favorite team.`
-
 module.exports = {
-  factCategories,
-  // noInputPrompts,
-  welcomeMessage
+  teamNameToColorsMap,
+  colorNameToChannelDataMap,
+  commands,
+  elements,
+  treeDirectiveDuration,
+  maxRequestsPerSession,
+  universes,
+  factCategories
 };
