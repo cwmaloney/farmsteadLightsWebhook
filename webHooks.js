@@ -204,7 +204,7 @@ function checkOverUse(sessionId, elementName) {
 
   const queue = getQueueForElement(elementName);
 
-  if (queue.getCountForSession(sessionId) > maxRequestsPerSession) {
+  if (queue.getCountForSession(sessionId) >= maxRequestsPerSession) {
     message = `You have two many requests in the queue now.  Please try again in a few minutes.`;
   }
 
