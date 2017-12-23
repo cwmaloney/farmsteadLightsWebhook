@@ -62,7 +62,7 @@ function getSessionData(sessionId) {
   let sessionData = sessionDataCache.get(sessionId);
   if (sessionData === undefined) {
     sessionData = { sequence: sessionCounter++, creationTimestamp: new Date(), requests: 0 };
-    sessionDataCache[sessionId] = sessionData;
+    sessionDataCache.set(sessionId, sessionData);
     console.log(`creatingSessionData: sessionId=${sessionId}`)
   }
   // console.log(`getSessionData: session=${sessionId} data=${sessionDataCache[sessionId]}`);
@@ -103,8 +103,8 @@ class DirectiveQueue {
 
   getCountForSession(sessionId) {
     let count = 0;
-    for (const index = this.oldestIndex; index < this.newestIndex; index++) {
-      directive = this.directives[index];
+    for (let index = this.oldestIndex; index < this.newestIndex; index++) {
+      let directive = this.directives[index];
       if (directive.sessionId === sessionId) {
         count++;
       }
@@ -272,7 +272,7 @@ function getUnfinishedCategoryNames(request) {
 
   for (const categoryName of factCategories.keys()) {
     console.log(`checking ${categoryName}`);
-    if (getUnusedFacts(request, categoryName) > 0) {
+    if (getUnusedFacts(request, categoryName).length > 0) {
       unfinishedCategoryNames.push(categoryName);
     }
   }
@@ -333,7 +333,7 @@ function sendCategorySuggestions(request, response, categoryName) {
     return;
   }
   fillResponse(request, response, 
-    `You have heard everything I know about ${categoryName}. Ask me about ${unfinishedCategories[0]}.`);
+    `You have heard everything I know about ${categoryName}. Ask me about the ${unfinishedCategoryNames[0]}.`);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -354,8 +354,8 @@ function setElementColor(request, response) {
   }
 
   const overUseMessage = checkOverUse(request.sessionId, elementName);
-  if (oversUseMessage != null && overUseMessage != undefined) {
-    fillResponse(request, response, message);
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
     return; 
   }
   
@@ -385,7 +385,7 @@ function setElementColor(request, response) {
 
   let directive = {};
 
-  directive.sessionId = getSessionId(request);
+  directive.sessionId = request.sessionId;
   directive.elementName = elementName;
   directive.universe = elementInfo.universe;
   directive.channelNumber = elementInfo.startChannel + (elementInfo.channelsPerElement)*(elementNumber - 1);
@@ -424,8 +424,8 @@ function setAllElementColors(request, response) {
   }
 
   const overUseMessage = checkOverUse(request.sessionId, elementName);
-  if (oversUseMessage != null && overUseMessage != undefined) {
-    fillResponse(request, response, message);
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
     return; 
   }
     
@@ -472,7 +472,7 @@ function setAllElementColors(request, response) {
   
   let directive = {};
 
-  directive.sessionId = getSessionId(request);
+  directive.sessionId = request.sessionId;
   directive.elementName = elementName;
   directive.universe = elementInfo.universe;
   directive.channelNumber = elementInfo.startChannel;
@@ -524,8 +524,8 @@ function setAllElementColorsByRgb(request, response) {
   }
 
   const overUseMessage = checkOverUse(request.sessionId, elementName);
-  if (oversUseMessage != null && overUseMessage != undefined) {
-    fillResponse(request, response, message);
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
     return; 
   }
   
@@ -580,7 +580,7 @@ function setAllElementColorsByRgb(request, response) {
   
   let directive = {};
 
-  directive.sessionId = getSessionId(request);
+  directive.sessionId = request.sessionId;
   directive.elementName = elementName;
   directive.universe = elementInfo.universe;
   directive.channelNumber = elementInfo.startChannel;
@@ -626,8 +626,8 @@ function doCommand(request, response) {
   }
 
   const overUseMessage = checkOverUse(request.sessionId, elementName);
-  if (oversUseMessage != null && overUseMessage != undefined) {
-    fillResponse(request, response, message);
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
     return; 
   }
   
@@ -648,13 +648,12 @@ function doCommand(request, response) {
     return;
   }  
 
-  let sessionId = getSessionId(request);
   const directives = [];
   for (let index = 0; index < prototypes.length; index++) {
     const prototype = prototypes[index];
 
     const directive = {
-      sessionId: sessionId,
+      sessionId: request.sessionId,
       elementName: elementName,
       universe: elementInfo.universe,
       channelNumber: elementInfo.startChannel,
@@ -691,8 +690,8 @@ function cheer(request, response) {
   }
 
   const overUseMessage = checkOverUse(request.sessionId, elementName);
-  if (oversUseMessage != null && overUseMessage != undefined) {
-    fillResponse(request, response, message);
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
     return; 
   }
    
@@ -722,11 +721,9 @@ function cheer(request, response) {
     }
   }
   
-  let sessionId = getSessionId(request);
-
   let directive = {};
 
-  directive.sessionId = sessionId;
+  directive.sessionId = request.sessionId;
   directive.elementName = elementName;
   directive.universe = elementInfo.universe,
   directive.channelNumber = elementInfo.startChannel,
@@ -895,7 +892,7 @@ try
     let sessionId = (request.body.session) ? request.body.session : undefined;
 
     // create a session id if needed
-    if (sessionId == undefined || session == null) {
+    if (sessionId == undefined || sessionId == null) {
       sessionId = "pseudoSession-" + ++sessionCounter;
     }
     // console.log(`request: sessionId=${sessionId}`);
