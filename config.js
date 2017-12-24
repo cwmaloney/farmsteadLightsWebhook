@@ -164,7 +164,7 @@ const commands = {
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 3000 }
       ]
     }
   },
@@ -182,7 +182,7 @@ const commands = {
         { channelData: [ 255,   0, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 10000 }
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 3000 }
       ]
     }
   },
@@ -209,7 +209,7 @@ const commands = {
         { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 5000 }
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 3000 }
       ]
     }
   },
@@ -222,7 +222,23 @@ const commands = {
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 5000 }
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 3000 }
+      ]
+    }
+  },
+  sleep: {
+    elf: {
+      directives: [
+        { channelData: [ 250, 250, 0,   0,   0,   0, 250,   0 ], duration: 1000 },
+        { channelData: [ 200, 200, 0,   0,   0,   0, 200,   0 ], duration: 1000 },
+        { channelData: [ 150, 150, 0,   0,   0,   0, 150,   0 ], duration: 1000 },
+        { channelData: [ 100, 100, 0,   0,   0,   0, 100,   0 ], duration: 1000 },
+        { channelData: [  75,  75, 0,   0,   0,   0,  75,   0 ], duration: 1000 },
+        { channelData: [  50,  50, 0,   0,   0,   0,  50,   0 ], duration: 1000 },
+        { channelData: [  25,  25, 0,   0,   0,   0,  25,   0 ], duration: 1000 },
+        { channelData: [ 150, 150, 0,   0,   0,   0, 150,   0 ], duration:  500 },
+        { channelData: [  50,  50, 0,   0,   0,   0,  50,   0 ], duration:  250 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 3000 },
       ]
     }
   }
@@ -299,12 +315,27 @@ factCategories.set("animals", {
       // TODO add a sound
     },
     "Pigs say oink.",
+    "Female pigs are called sows. Sows give birth to 8-12 piglets at a time.",
+    "Pigs can recongize their names.",
+
     "Sheep are wooley.",
-    "Cows give milk.",
-    "Cows say moo.",
+    "There are 1,000,000,000 sheep in the world",
+    "Female sheep are known as ewes. Male sheep are known as rams. Baby sheep are called lambs",
+
+    "Cows can hear lower and higher frequencies better than humans.",
+    "The first cows in the Americas arrive with Christoper Columbus on his second voyage.",
+    "A dairy cow can produce 125 pounds of saliva a day.",
+    
     "Goats give milk and will eat almost anything.",
+    "Goats were one of the first animals to be tamed by humans and were being herded 9,000 years ago.",
+    "Goats can learn their names and will come when called.",
+
     "Female chickens are called hens and lay eggs almost daily.",
     "Male chickens are called roosters and crow at sunrise and anytime they think you are sleeping.",
+    "The chicken is the closing living relavite to the tyrannosaurus rex.",
+    "Chickens have more bones in thier necks than giraffe",
+    "If hens have red ear lobes, they lay brown eggs. If hens have white ear lobes, they lay white eggs.",
+    "There are more chickens than people on the earth."
     ]
   });
 

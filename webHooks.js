@@ -63,7 +63,7 @@ function getSessionData(sessionId) {
   if (sessionData === undefined) {
     sessionData = { sequence: sessionCounter++, creationTimestamp: new Date(), requests: 0 };
     sessionDataCache.set(sessionId, sessionData);
-    console.log(`creatingSessionData: sessionId=${sessionId}`)
+    console.log(`creatingSessionData: ${sessionData.sequence}=sessionId=${sessionId.slice(-12)}`)
   }
   // console.log(`getSessionData: session=${sessionId} data=${sessionDataCache[sessionId]}`);
 
@@ -260,8 +260,7 @@ function getUnusedFacts(request, categoryName) {
     sessionData.unusedFacts[categoryName] = createArrayOfIndexes(category.facts);
   }
 
-  console.log(
-    `cat=${categoryName} unused=${sessionData.unusedFacts[categoryName].length}`);
+  // console.log(`cat=${categoryName} unused=${sessionData.unusedFacts[categoryName].length}`);
  
   return sessionData.unusedFacts[categoryName];
 }
@@ -271,7 +270,7 @@ function getUnfinishedCategoryNames(request) {
   const unfinishedCategoryNames = [];
 
   for (const categoryName of factCategories.keys()) {
-    console.log(`checking ${categoryName}`);
+    // console.log(`checking ${categoryName}`);
     if (getUnusedFacts(request, categoryName).length > 0) {
       unfinishedCategoryNames.push(categoryName);
     }
@@ -954,7 +953,8 @@ function fillResponse(request, response, responsePackage) {
 
   // Send the response to Dialogflow
   response.json(formattedResponse);
-  console.log(formattedResponse);
+  const sessionData = getSessionData(request.sessionId);
+  console.log(`${sessionData.sequence}: ${formattedResponse.fulfillmentText}`);
 }
 
 //////////////////////////////////////////////////////////////////////////////
