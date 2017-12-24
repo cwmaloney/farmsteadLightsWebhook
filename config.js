@@ -158,58 +158,60 @@ const commands = {
       directives: [
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 3000 }
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 2000 }
       ]
     }
   },
   party: {
     elf : {
       directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255,   0, 0,   0,   0,   0, 255,   0 ], duration: 250 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 250 },
+        { channelData: [ 255,   0, 0,   0,   0,   0, 255,   0 ], duration: 250 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0,   0, 255 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 2000 },
         { channelData: [ 255,   0, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 3000 }
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 3000 }
       ]
     }
   },
   flash: {
     elf : {
       directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 0, 255 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
-        { channelData: [ 0, 0, 0, 0, 0, 0, 0, 0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 3000 }
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [   0,   0, 0, 0, 0, 0,   0,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0,   0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [   0,   0, 0, 0, 0, 0,   0,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0,   0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [   0,   0, 0, 0, 0, 0,   0,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [   0,   0, 0, 0, 0, 0,   0,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0,   0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [   0,   0, 0, 0, 0, 0,   0,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0,   0, 255 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
+        { channelData: [   0,   0, 0, 0, 0, 0,   0,   0 ], duration: 500 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 2000 }
       ]
     }
   },
@@ -217,12 +219,12 @@ const commands = {
     elf: {
       directives: [
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration:  500 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration:  500 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 3000 }
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 2000 }
       ]
     }
   },
@@ -230,15 +232,43 @@ const commands = {
     elf: {
       directives: [
         { channelData: [ 250, 250, 0,   0,   0,   0, 250,   0 ], duration: 1000 },
-        { channelData: [ 200, 200, 0,   0,   0,   0, 200,   0 ], duration: 1000 },
-        { channelData: [ 150, 150, 0,   0,   0,   0, 150,   0 ], duration: 1000 },
-        { channelData: [ 100, 100, 0,   0,   0,   0, 100,   0 ], duration: 1000 },
-        { channelData: [  75,  75, 0,   0,   0,   0,  75,   0 ], duration: 1000 },
-        { channelData: [  50,  50, 0,   0,   0,   0,  50,   0 ], duration: 1000 },
-        { channelData: [  25,  25, 0,   0,   0,   0,  25,   0 ], duration: 1000 },
-        { channelData: [ 150, 150, 0,   0,   0,   0, 150,   0 ], duration:  500 },
-        { channelData: [  50,  50, 0,   0,   0,   0,  50,   0 ], duration:  250 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 3000 },
+        { channelData: [ 237, 237, 0,   0,   0,   0, 237,   0 ], duration:  250 },
+        { channelData: [ 225, 225, 0,   0,   0,   0, 225,   0 ], duration:  250 },
+        { channelData: [ 212, 212, 0,   0,   0,   0, 212,   0 ], duration:  250 },
+        { channelData: [ 200, 200, 0,   0,   0,   0, 200,   0 ], duration:  250 },
+        { channelData: [ 187, 187, 0,   0,   0,   0, 187,   0 ], duration:  250 },
+        { channelData: [ 175, 175, 0,   0,   0,   0, 175,   0 ], duration:  250 },
+        { channelData: [ 162, 162, 0,   0,   0,   0, 162,   0 ], duration:  250 },
+        { channelData: [ 150, 150, 0,   0,   0,   0, 150,   0 ], duration:  250 },
+        { channelData: [ 137, 137, 0,   0,   0,   0, 137,   0 ], duration:  250 },
+        { channelData: [ 125, 125, 0,   0,   0,   0, 125,   0 ], duration:  250 },
+        { channelData: [ 112, 112, 0,   0,   0,   0, 112,   0 ], duration:  250 },
+        { channelData: [ 100, 100, 0,   0,   0,   0, 100,   0 ], duration:  250 },
+        { channelData: [  87,  87, 0,   0,   0,   0,  87,   0 ], duration:  250 },
+        { channelData: [  75,  75, 0,   0,   0,   0,   0,  75 ], duration:  300 },
+        { channelData: [  62,  62, 0,   0,   0,   0,   0,  62 ], duration:  300 },
+        { channelData: [  50,   0, 0,   0,   0,   0,   0,  50 ], duration:  300 },
+        { channelData: [  37,   0, 0,   0,   0,   0,   0,  27 ], duration:  300 },
+        { channelData: [  25,   0, 0,   0,   0,   0,   0,  25 ], duration:  300 },
+        { channelData: [  37,   0, 0,   0,   0,   0,   0,  27 ], duration:  300 },
+        { channelData: [  50,  50, 0,   0,   0,   0,   0,  50 ], duration:  300 },
+        { channelData: [  62,  62, 0,   0,   0,   0,   0,  62 ], duration:  300 },
+        { channelData: [  75,  75, 0,   0,   0,   0,   0,  75 ], duration:  300 },
+        { channelData: [  87,  87, 0,   0,   0,   0,  87,   0 ], duration:  250 },
+        { channelData: [ 100, 100, 0,   0,   0,   0, 100,   0 ], duration:  250 },
+        { channelData: [ 112, 112, 0,   0,   0,   0, 112,   0 ], duration:  250 },
+        { channelData: [ 125, 125, 0,   0,   0,   0, 125,   0 ], duration:  250 },
+        { channelData: [ 137, 137, 0,   0,   0,   0, 137,   0 ], duration:  250 },
+        { channelData: [ 162, 162, 0,   0,   0,   0, 162,   0 ], duration:  250 },
+        { channelData: [ 150, 150, 0,   0,   0,   0, 150,   0 ], duration:  250 },
+        { channelData: [ 175, 175, 0,   0,   0,   0, 175,   0 ], duration:  250 },
+        { channelData: [ 187, 187, 0,   0,   0,   0, 187,   0 ], duration:  250 },
+        { channelData: [ 200, 200, 0,   0,   0,   0, 200,   0 ], duration:  250 },
+        { channelData: [ 212, 212, 0,   0,   0,   0, 212,   0 ], duration:  250 },
+        { channelData: [ 225, 225, 0,   0,   0,   0, 225,   0 ], duration:  250 },
+        { channelData: [ 237, 237, 0,   0,   0,   0, 237,   0 ], duration:  250 },
+        { channelData: [ 250, 250, 0,   0,   0,   0, 250,   0 ], duration:  250 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 2000 }
       ]
     }
   }
