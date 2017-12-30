@@ -156,7 +156,7 @@ const commands = {
   blink: {
     elf : {
       directives: [
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
+        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 500 },
@@ -166,14 +166,14 @@ const commands = {
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 2000 }
+        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
       ]
     }
   },
   party: {
     elf : {
       directives: [
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
+        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 500 },
         { channelData: [ 255,   0, 0,   0,   0,   0, 255,   0 ], duration: 250 },
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 250 },
         { channelData: [ 255,   0, 0,   0,   0,   0, 255,   0 ], duration: 250 },
@@ -184,7 +184,7 @@ const commands = {
         { channelData: [ 255,   0, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 3000 }
+        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
       ]
     }
   },
@@ -211,7 +211,7 @@ const commands = {
         { channelData: [ 255, 255, 0, 0, 0, 0,   0, 255 ], duration: 500 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
         { channelData: [   0,   0, 0, 0, 0, 0,   0,   0 ], duration: 500 },
-        { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 2000 }
+        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
       ]
     }
   },
@@ -224,7 +224,7 @@ const commands = {
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration:  500 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 2000 }
+        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
       ]
     }
   },
@@ -268,7 +268,7 @@ const commands = {
         { channelData: [ 225, 225, 0,   0,   0,   0, 225,   0 ], duration:  250 },
         { channelData: [ 237, 237, 0,   0,   0,   0, 237,   0 ], duration:  250 },
         { channelData: [ 250, 250, 0,   0,   0,   0, 250,   0 ], duration:  250 },
-        { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 2000 }
+        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
       ]
     }
   }
@@ -279,11 +279,26 @@ const commands = {
 //////////////////////////////////////////////////////////////////////////////
 
 const elements = {
-  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, startChannel: 1, channelsPerElement: 3},
+  tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, startChannel: 1, channelsPerElement: 3, redChannel: 0},
   buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, startChannel: 97, channelsPerElement: 8 },
   kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, startChannel: 105, channelsPerElement: 8 },
   bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, startChannel: 113, channelsPerElement: 8 },
-  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 121, channelsPerElement: 8 }
+  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 121, channelsPerElement: 8 },
+  trees:   { elementType: "trees", queueName: "trees",
+    components: [
+      { name: "tree", number: 1 },
+      { name: "tree", number: 2 },
+      { name: "tree", number: 3 },
+      { name: "tree", number: 4 },
+      { name: "tree", number: 5 },
+      { name: "tree", number: 6 },
+      { name: "tree", number: 7 },
+      { name: "tree", number: 8 },
+      { name: "tree", number: 9 },
+      { name: "tree", number: 10 } ] },
+  elves:  { elementType: "elves",
+    components: [
+      { name: "buddy" }, { name: "kringle" }, { name: "bliss" }, { name: "hermey" } ] }
 };
 
 const treeDirectiveDuration = 5000;
