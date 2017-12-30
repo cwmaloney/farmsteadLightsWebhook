@@ -89,7 +89,7 @@ function setChannelData(directive) {
   artnet.setChannelData(directive.universe,
     directive.channelNumber,
     directive.channelData);
-  artnet.send(directive.universe);
+    artnet.send(directive.universe);
 }
 
 class DirectiveQueue {
@@ -103,6 +103,17 @@ class DirectiveQueue {
 
   getSize() {
     return this.newestIndex - this.oldestIndex;
+  }
+
+  getRequestCount() {
+    let count = 0;
+    for (let index = this.oldestIndex; index < this.newestIndex; index++) {
+      let directive = this.directives[index];
+      if (directive.requestPlaceholder) {
+        count++;
+      }
+    }
+    return count;
   }
 
   getRequestCountForSession(sessionId) {
@@ -180,27 +191,29 @@ function getQueueForElement(elementName) {
 }
 
 function enqueueDirectives(directives) {
-  let queueMessage = '';
   if (Array.isArray(directives)) {
     for (let arrayIndex = 0; arrayIndex < directives.length; arrayIndex++) {
       enqueueOneDirective(directives[arrayIndex]);
     }
   } else {
-    queueMessage = enqueueOneDirective(directives);
+    enqueueOneDirective(directives);
   }
-  return queueMessage;
 }
 
 function enqueueOneDirective(directive) {
   if (directive !== null && directive !== undefined) {
     let queue = getQueueForElement(directive.elementName);
     queue.enqueue(directive);
-    const size = queue.getSize();
-    if (size == 1) {
-      return `(There is one request ahead of yours.)`;
-    } else if (size > 1) {
-      return `(There are ${queue.getSize()} requests ahead of yours.)`;
-    }
+  }
+}
+
+function getQueueMessage(elementName) {
+  const queue = getQueueForElement(elementName);
+  const size = queue.getRequestCount();
+  if (size == 1) {
+    return `(There is one request ahead of yours.)`;
+  } else if (size > 1) {
+    return `(There are ${queue.getSize()} requests ahead of yours.)`;
   }
   return '';
 }
@@ -214,7 +227,7 @@ function enqueueRequestPlaceholder(sessionId, elementName) {
 
   // console.log(`enqueueRequestPlaceholder: sessionId=${sessionId} elementName=${elementName}`);
 
-  const queueMessage = enqueueDirectives(directive);
+  enqueueOneDirective(directive);
 }
 
 function checkOverUse(sessionId, elementName) {
@@ -222,7 +235,7 @@ function checkOverUse(sessionId, elementName) {
 
   const queue = getQueueForElement(elementName);
 
-  if (queue.getCountForSession(sessionId) >= maxRequestsPerSession) {
+  if (queue.getRequestCountForSession(sessionId) >= maxRequestsPerSession) {
     message = `You have two many requests in the queue now.  Please try again in a few minutes.`;
   }
 
@@ -396,6 +409,7 @@ function onSetElementColor(request, response) {
   }
 
   setElementColor(request.sessionId, colorName, elementName, elementNumber);
+  const queueMessage = getQueueMessage(elementName);
   enqueueRequestPlaceholder(request.sessionId, elementName);
 
   let message = (!elementNumber)
@@ -435,7 +449,7 @@ function setElementColor(sessionId, colorName, elementName, elementNumber) {
 
     // console.log(`setElementColor: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
 
-    const queueMessage = enqueueDirectives(directive);
+    enqueueDirectives(directive);
   }
   
 }
@@ -606,8 +620,7 @@ function onSetElementColorsByRgb(request, response) {
  
   setElementColor(request.sessionId, colorName, elementName, elementNumber);
   enqueueRequestPlaceholder(request.sessionId, elementName);
- 
-  const queueMessage = enqueueDirectives(directive);  
+  const queueMessage = getQueueMessage(elementName);
   
   // console.log(`onSetElementColorsByRgb: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
   let message = `Changing the ${elementName}s to ${red}, ${green}, ${blue}. ${queueMessage} ${queueMessage} `;
@@ -638,7 +651,7 @@ function setElementColorByRgb(sessionId, rgb, elementName, elementNumber) {
 
     // console.log(`setElementColor: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
 
-    const queueMessage = enqueueDirectives(directive);
+    enqueueDirectives(directive);
   }
 
 }
@@ -681,9 +694,9 @@ function onCommand(request, response) {
   }
 
   applyComamndToElement(request.sessionId, comamndName, elementName, elementNumber);
+  const queueMessage = getQueueMessage(elementName);
+  enqueueRequestPlaceholder(request.sessionId, elementName);
 
-  const queueMessage = enqueueDirectives(directives);
-  
   let message = `Making ${elementName} ${commandName}. ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);    
 }
@@ -745,7 +758,8 @@ function applyCommand(sessionId, commandName, elementName, elementNumber) {
   
       // console.log(`doCommand: ${JSON.stringify(directives)}`);
     }
-    enqueueRequestPlaceholder(sessionId, elementName);
+
+    enqueueDirectives(directives);
   }
 }
 
@@ -777,15 +791,14 @@ function cheer(request, response) {
   }
   
   setElementToTeamColors(request.sessionId, teamName, elementName);
-  
+  const queueMessage = getQueueMessage(elementName);
+  enqueueRequestPlaceholder(request.sessionId, elementName);
+
   let message = `Go ${teamName}! Watch the trees cheer with you! ${queueMessage} Happy Holidays!`;
   fillResponse(request, response, message);
-  
-  return directive;
 }
 
-function setElementToTeamColors(sessionId, teamName, elementName)
-{   
+function setElementToTeamColors(sessionId, teamName, elementName) {   
   const elementInfo = elements[elementName];
   if (elementInfo === undefined || elementInfo === null) {
     console.error(`webhook::setElementToTeamColors - ${elementName} is not a valid elemenet name.`);
@@ -798,20 +811,23 @@ function setElementToTeamColors(sessionId, teamName, elementName)
     return;
   }
 
-  let elementCount = elementInfo.count;
+  const components = elementInfo.components;
+  if (components == undefined || components == null) {
+    console.error(`webhook::setElementToTeamColors - Element does not have components ${elementName}.`);
+    return;
+  }
 
   let channelData = [];
   let colorIndex = -1;
-  for (let elementNumber = 1; elementNumber <= elementCount; elementNumber++) {
+  for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
+    const component = components[componentIndex];
     colorIndex++;
     if (colorIndex === colorNames.length) {
       colorIndex = 0;
     }
     const colorName = colorNames[colorIndex];
-    setElementColor(sessionId, colorName, elementName, elementNumber);
+    setElementColor(sessionId, colorName, component.name,component.number);
   }
-
-  enqueueRequestPlaceholder(sessionId, elementName);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1170,7 +1186,8 @@ function idleCheck()
     let elasped = (now.getTime() - elfQueue.lastUsedTimestamp);
     if ( elasped > maxElfIdleTime) {
       applyCommand("idle", "blink", elementName);
-      console.log(`onIdle - ${comamndName} ${elementName} -- ${now}`);
+      enqueueRequestPlaceholder("idle", elementName);
+      console.log(`idle: ${comamndName} ${elementName} -- ${now}`);
     }
   }
 
@@ -1184,13 +1201,15 @@ function idleCheck()
         const colorIndex = getRandomIntInclusive(1, idleColors.length-1);
         const colorName = idleColors[colorIndex];
         setElementColor("idle", colorName, "trees");
-        console.log(`onIdle - setElementColor ${colorIndex}/${colorName} trees -- ${now}`);
+        enqueueRequestPlaceholder("idle", "trees");
+        console.log(`idle: setElementColor ${colorIndex}/${colorName} trees -- ${now}`);
         break;
       case 2:
         const teamIndex = getRandomIntInclusive(1, idleTeams.length-1);
         const teamName = idleTeams[teamIndex];
         setElementToTeamColors("idle", teamName, "trees");
-        console.log(`onIdle - setElementToTeamColors ${teamIndex}/${teamName} trees -- ${now}`);
+        enqueueRequestPlaceholder("idle", "trees");
+      console.log(`idle: setElementToTeamColors ${teamIndex}/${teamName} trees -- ${now}`);
         break;
     }
   }
@@ -1199,4 +1218,4 @@ function idleCheck()
   setTimeout(idleCheck, ideCheckTimeout);
 }
 
-idleCheck();
+setTimeout(idleCheck, ideCheckTimeout);
