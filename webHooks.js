@@ -66,13 +66,17 @@ function getSessionData(sessionId) {
   if (sessionData === undefined) {
     sessionData = { sequence: sessionCounter++, creationTimestamp: new Date(), requests: 0 };
     sessionDataCache.set(sessionId, sessionData);
-    console.log(`creatingSessionData: ${sessionData.sequence}=sessionId=${sessionId.slice(-12)}`)
+    console.log(`${sessionData.sequence}: creatingSessionData: sessionId=${sessionId.slice(-12)}`)
   }
   // console.log(`getSessionData: session=${sessionId} data=${sessionDataCache[sessionId]}`);
 
   removeOldSessionsFromCache();
 
   return sessionData;
+}
+
+function getTimestamp(now) {
+  return `[${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}]`
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -454,123 +458,114 @@ function setElementColor(sessionId, colorName, elementName, elementNumber) {
   
 }
 
-// //////////////////////////////////////////////////////////////////////////////
-// // onSetAllElementColors 
-// //////////////////////////////////////////////////////////////////////////////
-
-// function onSetAllElementColors(request, response) {
-//   // console.log("onSetAllElementColors");
-
-//   const elementName = request.parameters.elementName;
-//   if (elementName === undefined || elementName == null) {
-//     console.error('webhook::onSetAllElementColors - missing elementName');
-//     return;
-//   }
-//   // console.log("onSetAllElementColors, elementName" + elementName);  
-
-//   const elementInfo = elements[elementName];
-//   if (elementInfo === undefined || elementInfo === null) {
-//     console.error(`webhook::onSetAllElementColors - ${elementName} is not a valid elemenet name.`);
-//     return;
-//   }
-
-//   const overUseMessage = checkOverUse(request.sessionId, elementName);
-//   if (overUseMessage != null && overUseMessage != undefined) {
-//     fillResponse(request, response, overUseMessage);
-//     return; 
-//   }
-    
-//   const colorNames = request.parameters.colorNames;
-//   // console.log("onSetAllElementColors, colorNames=", colorNames);  
-//   if (colorNames === undefined || colorNames == null) {
-//     console.error('webhook::onSetAllElementColors - missing colorNames');
-//     return;
-//   }
-
-//   let colorIndex = -1;
-//   let colorName = 'black';
-//   if (!Array.isArray(colorNames)) {
-//     colorName = colorNames;
-//   }
-
-//   const elementCount = elementInfo.count;
-//   // console.log("onSetAllElementColors, elementCount=" + elementCount);  
-
-//   let channelData = [];
-//   for (let elementNumber = 1; elementNumber <= elementCount; elementNumber++) {
-//     if (Array.isArray(colorNames)) {
-//       colorIndex++;
-//       if (colorIndex === colorNames.length) {
-//         colorIndex = 0;
-//       }
-//       // console.log("onSetAllElementColors, colorIndex=", colorIndex);
-//       colorName = colorNames[colorIndex];
-//     }
-
-//     // console.log("onSetAllElementColors, colorName=", colorName);  
-//     const colorChannelData = colorNameToChannelDataMap[colorName];
-//     // console.log("onSetAllElementColors, colorChannelData=", colorChannelData);  
-//     if (colorChannelData === undefined) {
-//       console.error(`webhook::onSetAllElementColors - invalid color ${colorName}`);
-//      return;
-//     }
-
-//     const elementStartIndex = (elementInfo.channelsPerElement)*(elementNumber - 1);
-//     for (let rgbIndex = 0; rgbIndex < colorChannelData.length; rgbIndex++) {
-//       channelData[elementStartIndex + rgbIndex] = colorChannelData[rgbIndex];
-//     }
-//   }
-  
-//   let directive = {};
-
-//   directive.sessionId = request.sessionId;
-//   directive.elementName = elementName;
-//   directive.universe = elementInfo.universe;
-//   directive.channelNumber = elementInfo.startChannel;
-//   directive.channelData = channelData;
-//   directive.duration = treeDirectiveDuration;
-  
-//   const queueMessage = enqueueDirectives(directive);
-
-//   let colorMessage = "";
-//   if (Array.isArray(colorNames)) {
-//     for (let index = 0; index < colorNames.length; index++) {
-//       const name = colorNames[index];
-//       if (index > 0) {
-//         if (index == colorNames.length - 1) {
-//           colorMessage += (" and ");
-//         } else {
-//           colorMessage += (", ");
-//         }
-//       }
-//       colorMessage += (name);
-//     }
-//   } else {
-//     colorMessage = colorNames;
-//   }
-   
-
-//   // console.log(`onSetAllElementColors: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
-//   let message = `Setting colors of ${elementName}s to ${colorMessage}. ${queueMessage} Happy Holidays!`;
-//   fillResponse(request, response, message);    
-// }
-
 //////////////////////////////////////////////////////////////////////////////
-// onSetElementColorsByRgb 
+// onSetElementColors 
 //////////////////////////////////////////////////////////////////////////////
 
-function onSetElementColorsByRgb(request, response) {
-  // console.log("setAllElementColorByRGB");
+function onSetElementColors(request, response) {
+  // console.log("onSetElementColors");
+
   const elementName = request.parameters.elementName;
   if (elementName === undefined || elementName == null) {
-    console.error('webhook::onSetElementColorsByRgb - missing elementName');
+    console.error('webhook::onSetElementColors - missing elementName');
     return;
   }
-  // console.log("onSetElementColorsByRgb, elementName" + elementName);  
+  // console.log("onSetElementColors, elementName" + elementName);  
 
   const elementInfo = elements[elementName];
   if (elementInfo === undefined || elementInfo === null) {
-    console.error(`webhook::onSetElementColorsByRgb - ${elementName} is not a valid elemenet name.`);
+    console.error(`webhook::onSetElementColors - ${elementName} is not a valid elemenet name.`);
+    return;
+  }
+
+  const overUseMessage = checkOverUse(request.sessionId, elementName);
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
+    return; 
+  }
+    
+  const colorNames = request.parameters.colorNames;
+  // console.log("onSetElementColors, colorNames=", colorNames);  
+  if (colorNames === undefined || colorNames == null) {
+    console.error('webhook::onSetElementColors - missing colorNames');
+    return;
+  }
+
+  let colorIndex = -1;
+  let colorName = 'black';
+  if (!Array.isArray(colorNames)) {
+    colorName = colorNames;
+  }
+
+  const elementCount = elementInfo.count;
+  // console.log("onSetAllElementColors, elementCount=" + elementCount);  
+
+  if (elementInfo.components !== undefined) {
+    for (let index = 0; index < elementInfo.components.length; index++) {
+      const component = elementInfo.components[index];
+      if (Array.isArray(colorNames)) {
+        colorIndex++;
+        if (colorIndex === colorNames.length) {
+          colorIndex = 0;
+        }
+        // console.log("onSetAllElementColors, colorIndex=", colorIndex);
+        colorName = colorNames[colorIndex];
+      }
+      setElementColor(request.sessionId, colorName, component.name, component.number);
+    }
+  } else {
+    if (Array.isArray(colorNames)) {
+      colorIndex++;
+      if (colorIndex === colorNames.length) {
+        colorIndex = 0;
+      }
+      // console.log("onSetAllElementColors, colorIndex=", colorIndex);
+      colorName = colorNames[colorIndex];
+    }
+    setElementColor(request.sessionId, colorName, elementName);
+  }
+  
+  let colorMessage = "";
+  if (Array.isArray(colorNames)) {
+    for (let index = 0; index < colorNames.length; index++) {
+      const name = colorNames[index];
+      if (index > 0) {
+        if (index == colorNames.length - 1) {
+          colorMessage += (" and ");
+        } else {
+          colorMessage += (", ");
+        }
+      }
+      colorMessage += (name);
+    }
+  } else {
+    colorMessage = colorNames;
+  }
+   
+  const queueMessage = getQueueMessage(elementName);
+  enqueueRequestPlaceholder(request.sessionId, elementName);
+
+  // console.log(`onSetAllElementColors: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
+  let message = `Setting colors of ${elementName} to ${colorMessage}. ${queueMessage} Happy Holidays!`;
+  fillResponse(request, response, message);    
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// onSetElementColorByRgb 
+//////////////////////////////////////////////////////////////////////////////
+
+function onSetElementColorByRgb(request, response) {
+  // console.log("setAllElementColorByRGB");
+  const elementName = request.parameters.elementName;
+  if (elementName === undefined || elementName == null) {
+    console.error('webhook::onSetElementColorByRgb - missing elementName');
+    return;
+  }
+  // console.log("onSetElementColorByRgb, elementName" + elementName);  
+
+  const elementInfo = elements[elementName];
+  if (elementInfo === undefined || elementInfo === null) {
+    console.error(`webhook::onSetElementColorByRgb - ${elementName} is not a valid elemenet name.`);
     return;
   }
 
@@ -622,7 +617,7 @@ function onSetElementColorsByRgb(request, response) {
   enqueueRequestPlaceholder(request.sessionId, elementName);
   const queueMessage = getQueueMessage(elementName);
   
-  // console.log(`onSetElementColorsByRgb: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
+  // console.log(`onSetElementColorByRgb: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
   let message = `Changing the ${elementName}s to ${red}, ${green}, ${blue}. ${queueMessage} ${queueMessage} `;
   fillResponse(request, response, message);    
 }
@@ -693,7 +688,7 @@ function onCommand(request, response) {
     return; 
   }
 
-  applyComamndToElement(request.sessionId, comamndName, elementName, elementNumber);
+  applyCommand(request.sessionId, commandName, elementName);
   const queueMessage = getQueueMessage(elementName);
   enqueueRequestPlaceholder(request.sessionId, elementName);
 
@@ -955,17 +950,12 @@ function recordSuggestion(sessionId, type, suggestion) {
 // Create handlers for Dialogflow actions as well as a 'default' handler
 const actionHandlers = {
   'cheer': cheer,
-
   'set.element.color': onSetElementColor,
-
-  'set.element.colors.rgb': onSetElementColorsByRgb,
-
+  'set.element.colors': onSetElementColors,
+  'set.element.color.rgb': onSetElementColorByRgb,
   'set.channel.data': onSetChannelData,
-
   'command': onCommand,
-
   'record.suggestion': onRecordSuggestion,
-  
   'get.random.fact' : getRandomFact,
 
   'check.webhook.status': (request, response) => {
@@ -1084,7 +1074,8 @@ function fillResponse(request, response, responsePackage) {
   // Send the response to Dialogflow
   response.json(formattedResponse);
   const sessionData = getSessionData(request.sessionId);
-  console.log(`${sessionData.sequence}: ${formattedResponse.fulfillmentText}`);
+  let now = new Date();
+  console.log(`${sessionData.sequence}: ${formattedResponse.fulfillmentText}${getTimestamp(now)}`);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1165,19 +1156,19 @@ function idleCheck()
   const now = new Date();
 
   const elvesComponents = elements.elves.components;
-  let comamndName = 'blink';
+  let commandName = 'blink';
   switch (counter%4) {
     case 0:
-      comamndName = 'blink';
+      commandName = 'blink';
       break;
     case 1:
-      comamndName = 'sleep';
+      commandName = 'sleep';
       break;
     case 2:
-      comamndName = 'flash';
+      commandName = 'flash';
       break;
     case 3:
-      comamndName = 'smile';
+      commandName = 'smile';
       break;
   }
   for (let elfComponent of elvesComponents) {
@@ -1185,9 +1176,9 @@ function idleCheck()
     const elfQueue = getQueueForElement(elementName);
     let elasped = (now.getTime() - elfQueue.lastUsedTimestamp);
     if ( elasped > maxElfIdleTime) {
-      applyCommand("idle", "blink", elementName);
+      applyCommand("idle", commandName, elementName);
       enqueueRequestPlaceholder("idle", elementName);
-      console.log(`idle: ${comamndName} ${elementName} -- ${now}`);
+      console.log(`-: ${commandName} ${elementName} ${getTimestamp(now)}`);
     }
   }
 
@@ -1202,14 +1193,14 @@ function idleCheck()
         const colorName = idleColors[colorIndex];
         setElementColor("idle", colorName, "trees");
         enqueueRequestPlaceholder("idle", "trees");
-        console.log(`idle: setElementColor ${colorIndex}/${colorName} trees -- ${now}`);
+        console.log(`-: setElementColor ${colorIndex}/${colorName} trees ${getTimestamp(now)}`);
         break;
       case 2:
         const teamIndex = getRandomIntInclusive(1, idleTeams.length-1);
         const teamName = idleTeams[teamIndex];
         setElementToTeamColors("idle", teamName, "trees");
         enqueueRequestPlaceholder("idle", "trees");
-      console.log(`idle: setElementToTeamColors ${teamIndex}/${teamName} trees -- ${now}`);
+      console.log(`-: setElementToTeamColors ${teamIndex}/${teamName} trees ${getTimestamp(now)}`);
         break;
     }
   }
