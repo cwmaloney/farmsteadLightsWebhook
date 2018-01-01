@@ -20,8 +20,8 @@ const teamNameToColorsMap = {
                'orange', 'black', 'black', 'orange', 'orange'],
   Iowa: ["gold", "gold", "black", "black", "gold", "gold", "black", "black", "gold", "gold"],   
   "Iowa State": ['red', 'red', 'gold', 'gold','red', 'red', 'gold', 'gold','red', 'red'],
-  "Kansas State": [ 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple',
-              'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple', 'royalPurple' ],
+  "Kansas State": [ 'royalPurple', 'royalPurple', 'black', 'black', 'royalPurple',
+                    'royalPurple', 'black', 'black', 'royalPurple', 'royalPurple' ],
   "Kansas": [ 'blue', 'blue', 'red', 'red', 'blue', 'blue', 'red', 'red', 'blue', 'blue' ],
   Mavericks: [ 'orange', 'orange', 'orange', 'orange', 'lightBlue',
               'lightBlue', 'orange', 'orange', 'orange', 'orange'],
@@ -34,8 +34,10 @@ const teamNameToColorsMap = {
               'darkBlue', 'white', 'white', 'darkBlue', 'darkBlue' ],
   "Olathe South": [ 'blue', 'gold', 'gold', 'gold', 'blue',
               'blue', 'gold', 'gold', 'gold', 'blue'],
-  Oklahoma: [ "crimson", "crimson", "cream", "cream", "crimson", "crimson", "cream", "cream", "crimson", "crimson" ],
-  "Oklahoma State": [ "orange", "orange", "black", "black", "orange", "orange", "black", "black", "orange", "orange" ],
+  Oklahoma: [ "crimson", "crimson", "cream", "cream", "crimson",
+              "crimson", "cream", "cream", "crimson", "crimson" ],
+  "Oklahoma State": [ "orange", "orange", "black", "black", "orange",
+                      "orange", "black", "black", "orange", "orange" ],
   "Pittsburg State": [ 'crimson', 'crimson', 'gold', 'gold', 'crimson',
               'crimson', 'gold', 'gold', 'crimson', 'crimson'],
   Rainbow: [ 'darkRed', 'red', 'orangeRed', 'orange', 'yellow',
@@ -45,7 +47,7 @@ const teamNameToColorsMap = {
   Rockhurst: [ 'royalBlue', 'royalBlue', 'white', 'white', 'royalBlue',
                'royalBlue', 'white', 'white', 'royalBlue', 'royalBlue'],
   Roos: [ 'blue', 'blue', 'gold', 'gold', 'blue', 'blue', 'gold', 'gold', 'blue', 'blue'],
-  Royals: [ 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue', 'blue'],
+  Royals: [ 'blue', 'blue', 'white', 'white', 'blue', 'blue', 'white', 'white', 'blue', 'blue'],
   Rudolph: [ 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown', 'darkBrown',
              'darkBrown', 'darkBrown', 'darkBrown', 'red', 'black'],
   Santa: [ 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white', 'red', 'white'],
@@ -54,11 +56,11 @@ const teamNameToColorsMap = {
               'darkIndigo', 'sportingBlue', 'sportingBlue', 'darkIndigo', 'darkIndigo'],
   "STA Saints": [ 'blue', 'blue', 'gold','gold', 'blue', 'blue', 'gold','gold','blue', 'blue' ],
   "Texas Christian": [ 'hornedFrogPurple', 'hornedFrogPurple', 'white', 'white', 'hornedFrogPurple',
-         'hornedFrogPurple', 'white', 'white', 'hornedFrogPurple', 'hornedFrogPurple' ],
+                       'hornedFrogPurple', 'white', 'white', 'hornedFrogPurple', 'hornedFrogPurple' ],
   Texas: [ 'orange', 'orange', 'white', 'white', 'orange',
            'orange', 'white', 'white', 'orange', 'orange'],
   "Texas Tech": [ 'scarlet', 'scarlet', 'black', 'black', 'scarlet',
-         'scarlet', 'black', 'black', 'scarlet', 'scarlet' ],
+                  'scarlet', 'black', 'black', 'scarlet', 'scarlet' ],
   USA: [ 'red', 'red', 'red', 'red', 'white', 'white', 'blue', 'blue', 'blue', 'blue' ],
 };
 
@@ -311,6 +313,18 @@ const universes = [
 ];
 
 //////////////////////////////////////////////////////////////////////////////
+// keep active
+//////////////////////////////////////////////////////////////////////////////
+
+let ideCheckTimeout = 1 * 1000;
+let maxElfIdleTime = 25 * 1000;
+let maxTreesIdleTime = 25 * 1000;
+
+let idleColors = [ "red", "orange", "yellow", "green", "blue", "navy", "violet", "purple", "celadon" ];
+let idleTeams = [ "Chiefs", "Royals", "Sporting", "Kansas", "Kansas State", "Missouri", "Rainbow", "Santa", "USA" ];
+
+
+//////////////////////////////////////////////////////////////////////////////
 // facts
 //////////////////////////////////////////////////////////////////////////////
 
@@ -392,5 +406,10 @@ module.exports = {
   treeDirectiveDuration,
   maxRequestsPerSession,
   universes,
+  ideCheckTimeout,
+  maxElfIdleTime,
+  maxTreesIdleTime, 
+  idleColors,
+  idleTeams,
   factCategories
-};
+   };

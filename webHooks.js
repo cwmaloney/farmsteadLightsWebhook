@@ -27,6 +27,11 @@ const {
   treeDirectiveDuration,
   maxRequestsPerSession,
   universes,
+  ideCheckTimeout,
+  maxElfIdleTime,
+  maxTreesIdleTime, 
+  idleColors,
+  idleTeams,
   factCategories
 } = require('./config.js');
 
@@ -163,7 +168,7 @@ class DirectiveQueue {
   sendNextDirective() {
     if (this.timerId === undefined || this.timerId === null) {
       let directive = this.dequeue();
-      if (directive && !directive.requestPlaceholder) {
+      if (directive && directive.universe) {
         setChannelData(directive);
         const duration = directive.duration;
         if (duration !== undefined && duration !== null) {
@@ -213,11 +218,11 @@ function enqueueOneDirective(directive) {
 
 function getQueueMessage(elementName) {
   const queue = getQueueForElement(elementName);
-  const size = queue.getRequestCount();
-  if (size == 1) {
+  const count = queue.getRequestCount();
+  if (count == 1) {
     return `(There is one request ahead of yours.)`;
-  } else if (size > 1) {
-    return `(There are ${queue.getSize()} requests ahead of yours.)`;
+  } else if (count > 1) {
+    return `(There are ${count} requests ahead of yours.)`;
   }
   return '';
 }
@@ -386,12 +391,6 @@ function onSetElementColor(request, response) {
     console.error(`webhook::onSetElementColor - ${elementName} is not a valid elemenet name.`);
     return;
   }
-
-  const overUseMessage = checkOverUse(request.sessionId, elementName);
-  if (overUseMessage != null && overUseMessage != undefined) {
-    fillResponse(request, response, overUseMessage);
-    return; 
-  }
   
   let elementNumber = request.parameters.elementNumber;
   if (elementNumber === undefined || elementNumber == null) {
@@ -412,7 +411,14 @@ function onSetElementColor(request, response) {
     return;
   }
 
+  const overUseMessage = checkOverUse(request.sessionId, elementName);
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
+    return; 
+  }
+
   setElementColor(request.sessionId, colorName, elementName, elementNumber);
+  
   const queueMessage = getQueueMessage(elementName);
   enqueueRequestPlaceholder(request.sessionId, elementName);
 
@@ -614,8 +620,8 @@ function onSetElementColorByRgb(request, response) {
   const rgb = [ red, green, blue ];
  
   setElementColor(request.sessionId, colorName, elementName, elementNumber);
-  enqueueRequestPlaceholder(request.sessionId, elementName);
   const queueMessage = getQueueMessage(elementName);
+  enqueueRequestPlaceholder(request.sessionId, elementName);
   
   // console.log(`onSetElementColorByRgb: universe=${directive.universe} channel=${directive.channelNumber} data=${directive.channelData}`);
   let message = `Changing the ${elementName}s to ${red}, ${green}, ${blue}. ${queueMessage} ${queueMessage} `;
@@ -786,6 +792,7 @@ function cheer(request, response) {
   }
   
   setElementToTeamColors(request.sessionId, teamName, elementName);
+  
   const queueMessage = getQueueMessage(elementName);
   enqueueRequestPlaceholder(request.sessionId, elementName);
 
@@ -1137,13 +1144,6 @@ server.listen(port, function() {
 
 let counter = 0;
 
-let ideCheckTimeout = 5 * 1000;
-let maxElfIdleTime = 30 * 1000;
-let maxTreesIdleTime = 30 * 1000;
-
-let idleColors = [ "red", "orange", "yellow", "green", "blue", "navy", "violet", "purple", "celadon" ];
-let idleTeams = [ "Chiefs", "Royals", "Sporting", "Kansas", "Kansas State", "Missouri", "Rainbow", "Santa", "USA" ];
-
 //The maximum is inclusive and the minimum is inclusive
 function getRandomIntInclusive(min, max) {
   min = Math.ceil(min);
@@ -1156,30 +1156,41 @@ function idleCheck()
   const now = new Date();
 
   const elvesComponents = elements.elves.components;
-  let commandName = 'blink';
-  switch (counter%4) {
-    case 0:
-      commandName = 'blink';
-      break;
-    case 1:
-      commandName = 'sleep';
-      break;
-    case 2:
-      commandName = 'flash';
-      break;
-    case 3:
-      commandName = 'smile';
-      break;
-  }
+
+  // modify all or none of the elves - it just looks cool
+  let modifyElves = true;
   for (let elfComponent of elvesComponents) {
     const elementName = elfComponent.name;
     const elfQueue = getQueueForElement(elementName);
     let elasped = (now.getTime() - elfQueue.lastUsedTimestamp);
-    if ( elasped > maxElfIdleTime) {
+    if (elasped < maxElfIdleTime) {
+      modifyElves = false;
+      break;
+    }
+  }
+  if (modifyElves) {
+    let commandName = 'blink';
+    switch (counter%4) {
+      case 0:
+        commandName = 'blink';
+        break;
+      case 1:
+        commandName = 'sleep';
+        break;
+      case 2:
+        commandName = 'flash';
+        break;
+      case 3:
+        commandName = 'smile';
+        break;
+    }
+    for (let elfComponent of elvesComponents) {
+      const elementName = elfComponent.name;
       applyCommand("idle", commandName, elementName);
       enqueueRequestPlaceholder("idle", elementName);
       console.log(`-: ${commandName} ${elementName} ${getTimestamp(now)}`);
     }
+    counter++;
   }
 
   const treeQueue = getQueueForElement("tree");
@@ -1205,7 +1216,6 @@ function idleCheck()
     }
   }
 
-  counter++;
   setTimeout(idleCheck, ideCheckTimeout);
 }
 
