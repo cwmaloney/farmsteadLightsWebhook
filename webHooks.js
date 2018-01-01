@@ -1169,7 +1169,7 @@ function idleCheck()
     const elfQueue = getQueueForElement(elementName);
     let elasped = (now.getTime() - elfQueue.lastUsedTimestamp);
     if ( elasped > maxElfIdleTime) {
-      applyCommand("idle", "blink", elementName);
+      applyCommand("idle", comamndName, elementName);
       console.log(`onIdle - ${comamndName} ${elementName} -- ${now}`);
     }
   }
