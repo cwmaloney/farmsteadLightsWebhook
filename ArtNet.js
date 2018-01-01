@@ -106,7 +106,7 @@ class ArtNet extends EventEmitter {
       universeInfo.socket.bind(sourcePort);
     }
 
-    //console.log("ArtNet::configureUniverse complete, universe=" + universe);
+    // console.log("ArtNet::configureUniverse complete, universe=" + universe);
   }
 
   checkUniverse(universe = 0) {
@@ -245,17 +245,17 @@ class ArtNet extends EventEmitter {
     universeInfo.thottleTimerId = null;
     if (universeInfo.sendDelayedByThrottle) {
       universeInfo.sendDelayedByThrottle = false;
-      console.log("ArtNet::onThrottleTimeout - sending after throttle, universe=" + universe);
+      // console.log("ArtNet::onThrottleTimeout - sending after throttle, universe=" + universe);
       this.send(universe);
     } else {
-      //console.log("ArtNet::onThrottleTimeout - starting refresh timer, universe=" + universe);
+      // console.log("ArtNet::onThrottleTimeout - starting refresh timer, universe=" + universe);
       universeInfo.refreshInternvalTimerId = setTimeout(
         this.onRefreshTimeout.bind(this, universe), universeInfo.refreshInterval);
     }
   }
 
   onAfterSend(universe) {
-    //console.log("ArtNet::onAfterSend - starting throttle timer, universe=" + universe);
+    // console.log("ArtNet::onAfterSend - starting throttle timer, universe=" + universe);
     const universeInfo = this.getUniverseInfo(universe);
 
     universeInfo.thottleTimerId = setTimeout(
@@ -271,7 +271,7 @@ class ArtNet extends EventEmitter {
         // if there is a throttle time, do not send messaage but
     // set flag so throttle timer will send the message
     if (universeInfo.thottleTimerId) {
-      console.log("ArtNet::send throttled, universe=" + universe);
+      // console.log("ArtNet::send throttled, universe=" + universe);
       universeInfo.sendDelayedByThrottle = true;
       return;
     }

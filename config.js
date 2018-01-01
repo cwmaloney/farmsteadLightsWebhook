@@ -280,10 +280,10 @@ const commands = {
 
 const elements = {
   tree:    { elementType: "tree", queueName: "trees", count: 10, universe: 0, startChannel: 1, channelsPerElement: 3, redChannel: 0},
-  buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, startChannel: 97, channelsPerElement: 8 },
-  kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, startChannel: 105, channelsPerElement: 8 },
-  bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, startChannel: 113, channelsPerElement: 8 },
-  hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 121, channelsPerElement: 8 },
+  Buddy:   { elementType: "elf", queueName: "buddy", count: 1, universe: 1, startChannel: 97, channelsPerElement: 8 },
+  Kringle: { elementType: "elf", queueName: "kringle", count: 1, universe: 1, startChannel: 105, channelsPerElement: 8 },
+  Bliss:   { elementType: "elf", queueName: "bliss", count: 1, universe: 2, startChannel: 113, channelsPerElement: 8 },
+  Hermey:  { elementType: "elf", queueName: "hermey", count: 1, universe: 2, startChannel: 121, channelsPerElement: 8 },
   trees:   { elementType: "trees", queueName: "trees",
     components: [
       { name: "tree", number: 1 },
@@ -298,7 +298,7 @@ const elements = {
       { name: "tree", number: 10 } ] },
   elves:  { elementType: "elves",
     components: [
-      { name: "buddy" }, { name: "kringle" }, { name: "bliss" }, { name: "hermey" } ] }
+      { name: "Buddy" }, { name: "Kringle" }, { name: "Bliss" }, { name: "Hermey" } ] }
 };
 
 const treeDirectiveDuration = 5000;
