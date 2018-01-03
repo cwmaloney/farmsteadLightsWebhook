@@ -168,7 +168,7 @@ class DirectiveQueue {
   sendNextDirective() {
     if (this.timerId === undefined || this.timerId === null) {
       let directive = this.dequeue();
-      if (directive && directive.universe) {
+      if (directive && directive.universe !== undefined) {
         setChannelData(directive);
         const duration = directive.duration;
         if (duration !== undefined && duration !== null) {
