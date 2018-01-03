@@ -317,10 +317,10 @@ const universes = [
 //////////////////////////////////////////////////////////////////////////////
 
 let ideCheckTimeout = 1 * 1000;
-let maxElfIdleTime = 25 * 1000;
-let maxTreesIdleTime = 25 * 1000;
+let maxElfIdleTime = 10 * 1000;
+let maxTreesIdleTime = 20 * 1000;
 
-let idleColors = [ "red", "orange", "yellow", "green", "blue", "navy", "violet", "purple", "celadon" ];
+let idleColors = [ "red", "orange", "yellow", "green", "blue", "navy", "violet", "purple", "celadon", "white" ];
 let idleTeams = [ "Chiefs", "Royals", "Sporting", "Kansas", "Kansas State", "Missouri", "Rainbow", "Santa", "USA" ];
 
 
