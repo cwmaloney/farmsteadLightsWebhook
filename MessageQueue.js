@@ -101,26 +101,22 @@ class MessageQueue {
     return new Number(timeString);
   }
 
-  createMapObject(message, date, time) {
-    const timestamp = MessageQueue.parseDateAndTime(date, time);
-    const timestampString = MessageQueue.getTimestampString(timestamp.year, timestamp.month,
-      timestamp.day, timestamp.hour, timestamp.minute);
-    const timestampNumber = MessageQueue.getTimestampNumber(timestampString);
-
-    return { id: this.nextId++, message, date, time, timestamp, timestampString, timestampNumber };
-  }
 
   addMessage(message, date, time) {
-    const messageObject = this.createMapObject(message, date, time);
+    const timestamp = MessageQueue.parseDateAndTime(date, time);
+    const timestampString = MessageQueue.getTimestampString(
+        timestamp.year, timestamp.month, timestamp.day,
+        timestamp.hour, timestamp.minute);
+    const timestampNumber = MessageQueue.getTimestampNumber(timestampString);
 
-    let messageList = this.map.get(messageObject.timestampNumber);
-    if (messageList) {
-      messageList.push(messageObject);
-    } else {
-      messageList = [ messageObject ];
+    let timestampObject = this.map.get(timestampString);
+    if (!timestampObject) {
+      timestampObject = { timestamp, timestampString, timestampNumber, messages: [] };
+      this.map.set(timestampString, timestampObject);
     }
-
-    this.map.set(messageObject.timestampNumber, messageList);
+    const messageObject = { id: this.nextId++, message };
+    timestampObject.messages.push(messageObject);
+    return messageObject;
   }
 
   // addMessageToFile(message, date, time) {
@@ -190,4 +186,4 @@ function test() {
   queue.writeMessages("testMessageQueue.json");
 }
 
-test();
+//test();
