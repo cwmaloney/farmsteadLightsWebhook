@@ -15,6 +15,12 @@
       "request": "launch",
       "name": "Launch Server",
       "program": "${workspaceFolder}/webHooks.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test Message Queue",
+      "program": "${workspaceFolder}/MessageQueue.js"
     }
   ]
 }
