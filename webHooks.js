@@ -1130,9 +1130,9 @@ const actionHandlers = {
   'record.suggestion': onRecordSuggestion,
   'get.random.fact' : getRandomFact,
 
-  'addMessage': addMessage,
-  'checkName': checkName,
-  'addName': addName,
+  'add.message': addMessage,
+  'check.name': checkName,
+  'add.name': addName,
 
   'check.webhook.status': (request, response) => {
     let message = `The Farmstead Light's webhook server is running!`;
@@ -1313,8 +1313,8 @@ server.listen(port, function() {
 
 let counter = 0;
 
-//The maximum is inclusive and the minimum is inclusive
-function getRandomIntInclusive(min, max) {
+// The maximum and minium are inclusive
+function getRandomIntegerInclusive(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;  
@@ -1365,18 +1365,18 @@ function idleCheck()
   const treeQueue = getQueueForElement("tree");
   let elasped = (now.getTime() - treeQueue.lastUsedTimestamp);
   if (elasped > maxTreesIdleTime) {
-    let flipper = getRandomIntInclusive(1, 2)
-    // console.log(`onIdle - flipper=${flipper}`);
-    switch(flipper) {
+    let colorOrTeam = getRandomIntegerInclusive(1, 2)
+    // console.log(`onIdle - colorOrTeam=${colorOrTeam}`);
+    switch(colorOrTeam) {
       case 1:
-        const colorIndex = getRandomIntInclusive(1, idleColors.length-1);
+        const colorIndex = getRandomIntegerInclusive(1, idleColors.length-1);
         const colorName = idleColors[colorIndex];
         setElementColor("idle", colorName, "trees");
         enqueueRequestPlaceholder("idle", "trees");
         console.log(`-: setElementColor ${colorIndex}/${colorName} trees ${getTimestamp(now)}`);
         break;
       case 2:
-        const teamIndex = getRandomIntInclusive(1, idleTeams.length-1);
+        const teamIndex = getRandomIntegerInclusive(1, idleTeams.length-1);
         const teamName = idleTeams[teamIndex];
         setElementToTeamColors("idle", teamName, "trees");
         enqueueRequestPlaceholder("idle", "trees");
