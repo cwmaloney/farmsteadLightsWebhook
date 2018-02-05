@@ -159,19 +159,21 @@ class MessageQueue {
     if (!fileName) {
       fileName = messageQueueFileName;
     }
-    console.log(`loading messages from ${fileName}...`);
+    if (fs.existsSync(fileName)) {
+      console.log(`loading messages from ${fileName}...`);
 
-    try {
-      const temp = JSON.parse(fs.readFileSync(fileName, 'utf8'));
-      this.nextId = temp.nextId;
-      this.map = new Map(temp.map);
-    } catch (error) {
-      if (error.code !== "ENOENT") {
-        throw error;
+      try {
+        const temp = JSON.parse(fs.readFileSync(fileName, 'utf8'));
+        this.nextId = temp.nextId;
+        this.map = new Map(temp.map);
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          throw error;
+        }
       }
-    }
 
-    console.log(`loading messages complete nextId=${this.nextId} size=${this.map.size}`);
+      console.log(`loading messages complete nextId=${this.nextId} size=${this.map.size}`);
+    }
   }
 
   writeMessages(fileName) {
@@ -279,6 +281,8 @@ class MessageQueue {
   }
 
 }
+
+module.exports = { MessageQueue };
 
 function test() {
   const queue = new MessageQueue();
