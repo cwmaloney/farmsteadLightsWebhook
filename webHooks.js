@@ -967,13 +967,13 @@ function addMessage(request, response) {
   }
 
   // check names
-  let senderOkay = nameManager.isValid(sender);
+  let senderOkay = nameManager.isNameValid(sender);
   if (!senderOkay) {
     let message = "We do not reconginze the sender name";
     fillResponse(request, response, message);
     return;
   }
-  let recipientOkay = nameManager.isValid(recipient);
+  let recipientOkay = nameManager.isNameValid(recipient);
   if (!recipientOkay) {
     let message = "We do not reconginze the recipient name";
     fillResponse(request, response, message);
@@ -1026,13 +1026,13 @@ function checkName(request, response) {
   console.log(`checkName: ${name}`);
 
   // check name
-  let nameOkay = nameManager.isValid(name);
+  let nameOkay = nameManager.isNameValid(name);
 
-  let responseMessage;
+  let responseMessage = '';
   if (!nameOkay) {
-    let responseMessage = `We do not reconginze the name`;
+    responseMessage = `We do not reconginze the name ${name}.`;
   } else {
-    responseMessage = `The name ${name} is a recongized name`;
+    responseMessage = `The name ${name} is a recongized name.`;
   }
 
   fillResponse(request, response, responseMessage);
@@ -1051,7 +1051,7 @@ function addName(request, response) {
 
   let responseMessage;
 
-  let nameIsKnow = nameManager.isValid(name);
+  let nameIsKnow = nameManager.isNameValid(name);
   if (nameIsKnow) {
     responseMessage = `The name ${name} is already in the name list`;
   } else {
@@ -1061,17 +1061,17 @@ function addName(request, response) {
       return;
     }
 
-    if (password === systemPassword) {
+    if (password !== systemPassword) {
       let message = "You must provide the correct password to add a name.";
       fillResponse(request, response, message);
-      return;
+      return;      return;
     }
 
     console.log(`addName: ${name}`);
 
-    messageQueue.addName(name);
+    nameManager.addName(name);
 
-    let responseMessage = `Name added: ${name}`;
+    responseMessage = `Name added: ${name}`;
   }
 
   fillResponse(request, response, responseMessage);
