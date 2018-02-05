@@ -1,5 +1,7 @@
 "use strict";
 
+const fs = require('fs');
+
 const { FileUtilities } = require("./FileUtilities.js");
 
 const censusNamesFileName = 'censusNames.txt';
@@ -18,8 +20,9 @@ class NameManager {
   }
 
   addName(name) {
-    if (isNameValid(name) === false) {
-      this.additionalNames.set(name, mape.size);
+    if (this.isNameValid(name) === false) {
+      this.additionalNames.set(name, this.additionalNames.size);
+      this.writeAdditionalNames();
     }
   }
 
@@ -53,15 +56,15 @@ class NameManager {
     if (!fileName) {
       fileName = additionalNamesFileName;
     }
-    console.log(`writing additional names to ${fileName} size=${this.additionaNames.size} ...`);
+    console.log(`writing additional names to ${fileName} size=${this.additionalNames.size} ...`);
   
     let fd = fs.openSync(fileName, 'w');
     
     function writeName(value, key, map) {
-      fs.writeSync(fd, key);
+      fs.writeSync(fd, key + '\n');
     }
 
-    this.additionaNames.foreach(writeName);
+    this.additionalNames.forEach(writeName);
 
     fs.closeSync(fd);
   
@@ -70,25 +73,25 @@ class NameManager {
 
 }
 
-modeule.exports = { NameManager };
+module.exports = { NameManager };
 
-function test() {
+// function test() {
 
-  const nameManager = new NameManager();
+//   const nameManager = new NameManager();
 
-  console.log(`loading names ${new Date()} ...`);
-  nameManager.loadNameLists();
-  console.log(`loading names complete ${new Date()}`);
+//   console.log(`loading names ${new Date()} ...`);
+//   nameManager.loadNameLists();
+//   console.log(`loading names complete ${new Date()}`);
 
-  function checkName(name) {
-    const isValid = nameManager.isNameValid(name)
-    console.log(`${name} isValid=${isValid}`);
-  }
-  checkName("Chris");
-  checkName("Mark");
-  checkName("bad");
-  checkName("Mom");
-  checkName("Grand Ma");
-}
+//   function checkName(name) {
+//     const isValid = nameManager.isNameValid(name)
+//     console.log(`${name} isValid=${isValid}`);
+//   }
+//   checkName("Chris");
+//   checkName("Mark");
+//   checkName("bad");
+//   checkName("Mom");
+//   checkName("Grand Ma");
+// }
 
 // test();
