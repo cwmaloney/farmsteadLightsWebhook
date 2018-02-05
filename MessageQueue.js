@@ -45,10 +45,10 @@ class MessageQueue {
         throw `Invalid date ${date} - Year must be ${now.year}`;
       }
       if (parsed.month != 2) {
-        throw `Invalid date ${date} - Month must be Feburary`;
+        throw `Invalid date ${date} - Month must be February`;
       }
-      if (parsed.day < 4 || parsed.day > 18) {
-        throw `Invalid date ${date} - Day must be greater than 4 and less than 19`;       
+      if (parsed.day < 1 || parsed.day > 31) {
+        throw `Invalid date ${date} - Day must be between 1 and 31`;       
       }
       // if (parsed.year < now.year) {
       //   throw `invalid date ${date} - Year is in the past`; 
