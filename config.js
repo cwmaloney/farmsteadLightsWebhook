@@ -168,7 +168,7 @@ const commands = {
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 500 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255, 0 ], duration: 250 },
         { channelData: [ 255,   0, 0, 0, 0, 0, 255, 0 ], duration: 250 },
-        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
+        { channelData: [ 64, 64, 0,   0,   0,   0, 64,   0 ], duration: 2000 }
       ]
     }
   },
@@ -186,7 +186,7 @@ const commands = {
         { channelData: [ 255,   0, 0, 255,   0, 255,   0,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 2000 },
-        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
+        { channelData: [ 64, 64, 0,   0,   0,   0, 64,   0 ], duration: 2000 }
       ]
     }
   },
@@ -213,7 +213,7 @@ const commands = {
         { channelData: [ 255, 255, 0, 0, 0, 0,   0, 255 ], duration: 500 },
         { channelData: [ 255, 255, 0, 0, 0, 0, 255,   0 ], duration: 500 },
         { channelData: [   0,   0, 0, 0, 0, 0,   0,   0 ], duration: 500 },
-        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
+        { channelData: [ 64, 64, 0,   0,   0,   0, 64,   0 ], duration: 2000 }
       ]
     }
   },
@@ -226,7 +226,7 @@ const commands = {
         { channelData: [ 255, 255, 0,   0,   0,   0, 255,   0 ], duration: 1000 },
         { channelData: [ 255, 255, 0, 255,   0, 255,   0,   0 ], duration:  500 },
         { channelData: [ 255, 255, 0,   0, 255, 255,   0,   0 ], duration: 1000 },
-        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
+        { channelData: [ 64, 64, 0,   0,   0,   0, 64,   0 ], duration: 2000 }
       ]
     }
   },
@@ -270,7 +270,7 @@ const commands = {
         { channelData: [ 225, 225, 0,   0,   0,   0, 225,   0 ], duration:  250 },
         { channelData: [ 237, 237, 0,   0,   0,   0, 237,   0 ], duration:  250 },
         { channelData: [ 250, 250, 0,   0,   0,   0, 250,   0 ], duration:  250 },
-        { channelData: [ 128, 128, 0,   0,   0,   0, 128,   0 ], duration: 2000 }
+        { channelData: [ 64, 64, 0,   0,   0,   0, 64,   0 ], duration: 2000 }
       ]
     }
   }
@@ -317,8 +317,8 @@ const universes = [
 //////////////////////////////////////////////////////////////////////////////
 
 let ideCheckTimeout = 1 * 1000;
-let maxElfIdleTime = 10 * 1000;
-let maxTreesIdleTime = 20 * 1000;
+let maxElfIdleTime = 30 * 1000;
+let maxTreesIdleTime = 30 * 1000;
 
 let idleColors = [ "red", "orange", "yellow", "green", "blue", "navy", "violet", "purple", "celadon", "white" ];
 let idleTeams = [ "Chiefs", "Royals", "Sporting", "Kansas", "Kansas State", "Missouri", "Rainbow", "Santa", "USA" ];
