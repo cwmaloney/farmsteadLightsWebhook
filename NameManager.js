@@ -70,6 +70,8 @@ class NameManager {
 
 }
 
+modeule.exports = { NameManager };
+
 function test() {
 
   const nameManager = new NameManager();
@@ -91,4 +93,4 @@ function test() {
   checkName("Grand Ma");
 }
 
-test();
+// test();
