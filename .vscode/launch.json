@@ -21,6 +21,12 @@
       "request": "launch",
       "name": "Test Message Queue",
       "program": "${workspaceFolder}/MessageQueue.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test Name Manager",
+      "program": "${workspaceFolder}/NameManager.js"
     }
   ]
 }
