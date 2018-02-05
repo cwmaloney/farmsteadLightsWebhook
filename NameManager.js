@@ -77,14 +77,12 @@ function test() {
   const nameManager = new NameManager();
 
   console.log(`loading names ${new Date()} ...`);
-
   nameManager.loadNameLists();
-
   console.log(`loading names complete ${new Date()}`);
 
   function checkName(name) {
     const isValid = nameManager.isNameValid(name)
-    console.log(`${name} isValid= ${isValid}`);
+    console.log(`${name} isValid=${isValid}`);
   }
   checkName("Chris");
   checkName("Mark");
