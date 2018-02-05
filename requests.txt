@@ -1,0 +1,35 @@
+
+Display Valentine
+
+@sys.given-name:recipient, Will you be my Valentine? @sys.given-name:sender
+
+At @sys.time:time on @sys.date:date, display: @sys.given-name:recipient, Will you be my Valentine? @sys.given-name:sender
+On @sys.date:date at @sys.time:time, display: @sys.given-name:recipient, Will you be my Valentine? @sys.given-name:sender
+At @sys.time:time, display: @sys.given-name:recipient, Will you be my Valentine? @sys.given-name:sender
+
+
+Display Love
+
+@sys.given-name:recipient, I love you, @sys.given-name:sender
+
+At @sys.time:time on @sys.date:date, display: @sys.given-name:recipient, I love you, @sys.given-name:sender
+On @sys.date:date at @sys.time:time, display: @sys.given-name:recipient, I love you, @sys.given-name:sender
+At @sys.time:time, display: @sys.given-name:recipient, I love you, @sys.given-name:sender
+
+
+Display Like
+
+@sys.given-name:recipient, I like you, @sys.given-name:sender
+
+At @sys.time:time on @sys.date:date, display: @sys.given-name:recipient, I like you, @sys.given-name:sender
+On @sys.date:date at @sys.time:time, display: @sys.given-name:recipient, I like you, @sys.given-name:sender
+At @sys.time:time, display: @sys.given-name:recipient, I like you, @sys.given-name:sender
+
+
+Display Proposal
+
+@sys.given-name:recipient, Will you marry me? @sys.given-name:sender
+
+At @sys.time:time on @sys.date:date, display: @sys.given-name:recipient, Will you marry me? @sys.given-name:sender
+On @sys.date:date at @sys.time:time, display: @sys.given-name:recipient, Will you marry me? @sys.given-name:sender
+At @sys.time:time, display: @sys.given-name:recipient, Will you marry me? @sys.given-name:sender
