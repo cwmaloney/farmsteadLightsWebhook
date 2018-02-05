@@ -21,6 +21,17 @@ class MessageQueue {
   //   return { year, month, day, hour, minute };
   // }
 
+  static getCurrentTimestampNumber() {
+    const nowDate = new Date();
+    const timestamp = { year: nowDate.getFullYear(), month: nowDate.getMonth()+1, day: nowDate.getDate(),
+                        hour: nowDate.getHours(), minute: nowDate.getMinutes() };
+    const timestampString = MessageQueue.getTimestampString(
+      timestamp.year, timestamp.month, timestamp.day,
+      timestamp.hour, timestamp.minute);
+    const timestampNumber = MessageQueue.getTimestampNumber(timestampString);
+    return timestampNumber;            
+  }
+
   static parseDateAndTime(date, time) {
     const nowDate = new Date();
     const now = { year: nowDate.getFullYear(), month: nowDate.getMonth()+1, day: nowDate.getDate(),
@@ -169,6 +180,43 @@ class MessageQueue {
     console.log(`writing messages complete`);
   }
 
+  getActiveMessages() {
+    const activeMessages = [];
+    const currentTimestampNumber = MessageQueue.getCurrentTimestampNumber();
+    for (const timestampNumber of map.keys()) {
+      if (timestampNumber > currentTimestampNumber) {
+        break;
+      }
+      const messageObject = map.get(timestampNumber);
+      if (messageObject.displayCount >= maximumDisplayCount) {
+      
+      } else {
+        activeMessages.push(messageObject);
+      }
+    }
+    return activeMessages;
+  }
+
+  findMessageById(messageId) {
+    for (const timestampNumber of map.keys()) {
+     const messageObject = map.get(timestampNumber);
+      if (messageObject.id == messageId) {}
+        return messageObject;
+    }
+    return null;
+  }
+
+  incrementMessageDisplayCount(messageId) {
+    const messageObject = findMessageById(messageId);
+    if (!messageObject) {
+      console.log(`incrementMessageDisplayCount - missing message ${messageId}`);
+      return;
+    }
+
+    messagesObject.displayCount += 1;
+
+    writeMessages();
+  } 
 }
 
 function test() {
