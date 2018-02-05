@@ -1,7 +1,14 @@
-var fs = require('fs');
+const fs = require('fs');
+const https = require("https");
 
 const messageQueueFileName = 'messageQueue.json';
-  
+const messageDuration = 10000;
+
+const defaultMessageDuration = 10000;
+const defaultMessage = "Happy Valentine's Day - go to farmsteadLights.com to display your Valentine here";
+
+const madrixServerAddress = "server";
+
 class MessageQueue {
 
   constructor() {
@@ -113,7 +120,7 @@ class MessageQueue {
   }
 
 
-  addMessage(message, date, time) {
+  addMessage(sessionId, message, date, time) {
     const timestamp = MessageQueue.parseDateAndTime(date, time);
     const timestampString = MessageQueue.getTimestampString(
         timestamp.year, timestamp.month, timestamp.day,
@@ -125,7 +132,7 @@ class MessageQueue {
       timestampObject = { timestamp, timestampString, timestampNumber, messages: [] };
       this.map.set(timestampString, timestampObject);
     }
-    const messageObject = { id: this.nextId++, message };
+    const messageObject = { sessionId, id: this.nextId++, message, displayCount: 0 };
     timestampObject.messages.push(messageObject);
     return messageObject;
   }
@@ -180,22 +187,36 @@ class MessageQueue {
     console.log(`writing messages complete`);
   }
 
-  getActiveMessages() {
-    const activeMessages = [];
+  getNextMessage() {
     const currentTimestampNumber = MessageQueue.getCurrentTimestampNumber();
     for (const timestampNumber of map.keys()) {
       if (timestampNumber > currentTimestampNumber) {
         break;
       }
       const messageObject = map.get(timestampNumber);
-      if (messageObject.displayCount >= maximumDisplayCount) {
-      
-      } else {
-        activeMessages.push(messageObject);
+      if (messageObject.displayCount < 1) {      
+        return messageObject;
       }
     }
-    return activeMessages;
+    return null;
   }
+
+  // getActiveMessages() {
+  //   const activeMessages = [];
+  //   const currentTimestampNumber = MessageQueue.getCurrentTimestampNumber();
+  //   for (const timestampNumber of map.keys()) {
+  //     if (timestampNumber > currentTimestampNumber) {
+  //       break;
+  //     }
+  //     const messageObject = map.get(timestampNumber);
+  //     if (messageObject.displayCount >= maximumDisplayCount) {
+      
+  //     } else {
+  //       activeMessages.push(messageObject);
+  //     }
+  //   }
+  //   return activeMessages;
+  // }
 
   findMessageById(messageId) {
     for (const timestampNumber of map.keys()) {
@@ -206,17 +227,57 @@ class MessageQueue {
     return null;
   }
 
-  incrementMessageDisplayCount(messageId) {
-    const messageObject = findMessageById(messageId);
-    if (!messageObject) {
-      console.log(`incrementMessageDisplayCount - missing message ${messageId}`);
-      return;
+  // incrementMessageDisplayCount(messageId) {
+  //   const messageObject = findMessageById(messageId);
+  //   if (!messageObject) {
+  //     console.log(`incrementMessageDisplayCount - missing message ${messageId}`);
+  //     return;
+  //   }
+
+  //   messagesObject.displayCount += 1;
+
+  //   writeMessages();
+  // }
+  
+  displayNextMessage() {
+    if (this.timerId === undefined || this.timerId === null) {
+      let message = this.getNextMessage();
+      if (message) {
+        this.displayMessage(message);
+        message.displayCount += 1;
+        writeMessages();
+        this.timerId = setTimeout(this.onThrottleTimeout.bind(this), this.messageDuration);
+      } else {
+        this.displayMessage(defaultMessage);
+        this.timerId = setTimeout(this.onThrottleTimeout.bind(this), this.defaultMessageDuration);
+      }
     }
+  }
 
-    messagesObject.displayCount += 1;
+  displayMessage(message) {
+    console.log(`message "${displayMessage}"`);
+    const uriEncodedMessage = encodeURIComponent(mesage);
+    https.get(`http://${madrixServerAddress}/setScroller?message=${uriEncodedMessage}`, 
+      function(response) {
+        var statusCode = res.statusCode;
+        if (statusCode != 200) {
+          console.log("displayMessage non-200 response status code:");
+          return;
+        }
+        response.on("data", function(data) {
+          console.log(`displayMessage on data "${data}"`);
+        });
+        response.on("end", function() {
+          console.log(`displayMessage on end`);
+        });
+      });
+  }
+  
+  onTimeout() {
+    this.timerId = null;
+    this.sendNextMessage();
+  }
 
-    writeMessages();
-  } 
 }
 
 function test() {
