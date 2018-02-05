@@ -35,8 +35,29 @@ const {
   factCategories
 } = require('./config.js');
 
+const {
+  systemPassword
+} = require('./secerts.js');
+
 // TODO - what is this?
 process.env.DEBUG = 'actions-on-google:*';
+
+//////////////////////////////////////////////////////////////////////////////
+const { MessageQueue } = require("./MessageQueue.js");
+
+const { NameManager } = require("./NameManager.js");
+
+
+const nameManager = new NameManager();
+const messageQueue = new MessageQueue();
+
+console.log(`loading names  @${new Date()} ...`);
+nameManager.loadNameLists();
+console.log(`loading names complete  @${new Date()}`);
+
+console.log(`loading message queue  @${new Date()} ...`);
+messageQueue.loadMessages();
+console.log(`loading messages complete  @${new Date()}`);
 
 //////////////////////////////////////////////////////////////////////////////
 // sessionDataCache is keyed by session id from Dialogflow
@@ -877,14 +898,14 @@ function onSetChannelData(request, response) {
   if (end < 1 || end > 512) {
     console.error('webhook::onSetChannelData - bad end');
     let message = `webhook::onSetChannelData - bad end`;
-    fillResponse(request, response, message)
+    fillResponse(request, response, message);
     return;
   }
   
   if (start > end) {
     console.error('webhook::onSetChannelData - start > end');
     let message = `webhook::onSetChannelData - start > end`;
-    fillResponse(request, response, message)
+    fillResponse(request, response, message);
     return;
   }
 
@@ -911,6 +932,150 @@ function onSetChannelData(request, response) {
   fillResponse(request, response, message);    
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// addMessage 
+//////////////////////////////////////////////////////////////////////////////
+
+function addMessage(request, response) {
+  let sender = request.parameters.sender;
+  if (sender === undefined || sender == null) {
+    console.error('webhook::addMessage - missing sender');
+    return;
+  }
+ 
+  let recipient = request.parameters.recipient;
+  if (recipient === undefined || recipient == null) {
+    console.error('webhook::addMessage - missing recipient');
+    return;
+  }
+ 
+  let messageType = request.parameters.messageType;
+  if (messageType === undefined || messageType == null) {
+    console.error('webhook::addMessage - missing messageType');
+    return;
+  }
+ 
+  let date = request.parameters.date;
+  let time = request.parameters.time;
+ 
+  console.log(`addMessage: From: ${sender} To: ${recipient} Message: ${messageType} On: ${date} At: ${time}`);
+
+  const overUseMessage = checkOverUse(request.sessionId, "message");
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
+    return; 
+  }
+
+  // check names
+  let senderOkay = nameManager.isValid(sender);
+  if (!senderOkay) {
+    let message = "We do not reconginze the sender name";
+    fillResponse(request, response, message);
+    return;
+  }
+  let recipientOkay = nameManager.isValid(recipient);
+  if (!recipientOkay) {
+    let message = "We do not reconginze the recipient name";
+    fillResponse(request, response, message);
+    return;
+  }
+
+  const message = formatMessage(sender, recipient, messageType);
+  
+  console.log(`addMessage ... ${message}, ${date}, ${time}`);
+  return messageQueue.addMessage(message, date, time);
+
+  let responseMessage = `*** We are currently testing this feature. Your message will NOT be display. Try this in a few days. Watch for your message "${message}".`
+  //let responseMessage = `Watch for your message ${message} (${id})`;
+  if (queuedMessage.date && queuedMessage.time) {
+    responseMessage += ` On ${queuedMessage.date} at ${queuedMessage.time}`;
+  } else if (queuedMessage.time) {
+    responseMessage += ` At ${queuedMessage.time}`;
+  }
+  responseMessage += ` (Your request id is ${id}.)`;
+  fillResponse(request, response, responseMessage);
+}
+
+function formatMessage(sender, recipient, messageType, date, time) {
+  let message = ''
+
+  if (messageType === "valentine" || !messageType) {
+    message = `${recipient}, Will you be my Valentine?, ${sender}`;
+  } else if (messageType === "love") {
+    message = `${recipient}, I love you, ${sender}`;
+  } else if (messageType === "marry") {
+    message = `${recipient}, Will you marry me?, ${sender}`;
+  } else if (messageType == "friend") {
+    message = `${recipient}, Thank you for being my friend, ${sender}`;
+  }
+
+  return `${message}`;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// checkName 
+//////////////////////////////////////////////////////////////////////////////
+
+function checkName(request, response) {
+  let name = request.parameters.name;
+  if (name === undefined || name == null) {
+    console.error('webhook::checkName - missing name');
+    return;
+  }
+
+  console.log(`checkName: ${name}`);
+
+  // check name
+  let nameOkay = nameManager.isValid(name);
+
+  let responseMessage;
+  if (!nameOkay) {
+    let responseMessage = `We do not reconginze the name`;
+  } else {
+    responseMessage = `The name ${name} is a recongized name`;
+  }
+
+  fillResponse(request, response, responseMessage);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// addName 
+//////////////////////////////////////////////////////////////////////////////
+
+function addName(request, response) {
+  let name = request.parameters.name;
+  if (name === undefined || name == null) {
+    console.error('webhook::addName - missing name');
+    return;
+  }
+
+  let responseMessage;
+
+  let nameIsKnow = nameManager.isValid(name);
+  if (nameIsKnow) {
+    responseMessage = `The name ${name} is already in the name list`;
+  } else {
+    let password = request.parameters.password;
+    if (password === undefined || password == null) {
+      console.error('webhook::addName - missing password');
+      return;
+    }
+
+    if (password === systemPassword) {
+      let message = "You must provide the correct password to add a name.";
+      fillResponse(request, response, message);
+      return;
+    }
+
+    console.log(`addName: ${name}`);
+
+    messageQueue.addName(name);
+
+    let responseMessage = `Name added: ${name}`;
+  }
+
+  fillResponse(request, response, responseMessage);
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // onRecordSuggestion 
@@ -964,6 +1129,10 @@ const actionHandlers = {
   'command': onCommand,
   'record.suggestion': onRecordSuggestion,
   'get.random.fact' : getRandomFact,
+
+  'addMessage': addMessage,
+  'checkName': checkName,
+  'addName': addName,
 
   'check.webhook.status': (request, response) => {
     let message = `The Farmstead Light's webhook server is running!`;
