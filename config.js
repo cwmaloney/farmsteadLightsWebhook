@@ -412,4 +412,4 @@ module.exports = {
   idleColors,
   idleTeams,
   factCategories
-   };
+  };
