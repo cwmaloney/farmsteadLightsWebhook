@@ -1,7 +1,7 @@
 {
   "name": "farmstead-lights-webhook",
   "description": "Dialogflow webhook for Deanna Rose Children's Farmstead Holiday Lights",
-  "version": "1.0.0",
+  "version": "2018.2.3",
   "private": true,
   "author": "Chris Maloney",
   "engines": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "lint": "eslint --fix \"**/*.js\"",
-    "test": "npm run lint",
+    "link": "eslint \"**/*.js\"",
     "start": "node webhooks.js",
     "testArtNet": "node testArtNet.js"
   },
