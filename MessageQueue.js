@@ -163,12 +163,14 @@ class MessageQueue {
 
     const messageObject = { sessionId, id, message, displayCount: 0 };
     if (date) {
-      messageObject.formattedDate = (timestampObject.month).toString().padStart(2,0)
-                                      + '/' + (timestampObject.day).toString().padStart(2,0);
+      messageObject.formattedDate
+        = (timestampObject.month).toString().padStart(2,0)
+          + '/' + (timestampObject.day).toString().padStart(2,0);
     }
     if (time) {
-      messageObject.formattedTime = (timestampObject.hour).toString().padStart(2,0)
-                                      + ':' + (timestampObject.minute).toString().padStart(2,0);
+      messageObject.formattedTime
+        = (timestampObject.hour).toString().padStart(2,0)
+          + ':' + (timestampObject.minute).toString().padStart(2,0);
     }
     timestampMapObject.messages.push(messageObject);
     this.writeMessages();
@@ -319,6 +321,32 @@ class MessageQueue {
     this.displayNextMessage();
   }
 
+  static displayStoragePlace(storagePlace) {
+    const url = `http://10.0.0.100/RemoteCommands/SetStorageLeft=${storagePlace}`;
+    http.get(url,
+      function(response) {
+        const statusCode = response.statusCode;
+        if (statusCode != 200) {
+          console.error(`storagePlace: response status code: ${statusCode}`);
+          return;
+        }
+      }
+    )
+      .on('error',
+        function(error) {
+          console.error(`storagePlace: error: ${error.message}`);
+        }
+      );
+  }
+
+  static displayRose() {
+    this.displayStoragePlace("S15P63");
+  }
+
+  static displayHeart() {
+    this.displayStoragePlace("S15P64");
+  }
+
   displayMessage(messageObject, message) {
     // http://10.0.0.100/gui_05/index.html?SetTextTicker=this+is+a+testset+own+tickertext+here
     console.log(`displayMessage: "${message}"`);
@@ -329,7 +357,10 @@ class MessageQueue {
       if (statusCode == 200) {
         if (messageObject != null && messageObject !== undefined) {
           messageObject.displayCount += 1;
+          // MessageQueue.displayHeart();
           // this.writeMessages();
+        } else {
+          // MessageQueue.displayRose();
         }
       }
       else {
@@ -337,7 +368,6 @@ class MessageQueue {
         return;
       }
     }
-
 
     const url = `http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`;
     http.get(url, onResponse)
