@@ -4,7 +4,7 @@ const fs = require('fs');
 const http = require("http");
 
 const messageQueueFileName = 'messageQueue.json';
-const messageDuration = 30000;
+const messageDuration = 20000;
 
 const defaultMessageDuration = 1000;
 const defaultMessage = "Happy Valentine's Day - go to farmsteadLights.com to display your Valentine here";
@@ -16,40 +16,41 @@ class MessageQueue {
   constructor() {
     this.nextId = 1;
     this.map = new Map();
-    this.showingDefault = false;
+    this.showingDefaultMessage = false;
   }
 
-  // getTimestamp(date, time) {
-  //   const dateParts = date.split('-');
-  //   if (dataParts != 3) {
-  //     throw `invalid date ${date}`;
-  //   }
-  //   const timeParts = time.split(':');
-  //   if (timeParts != 3) {
-  //     throw `invalid time ${time}`;
-  //   }
-  //   return { year, month, day, hour, minute };
-  // }
-
-  static getCurrentTimestampNumber() {
+  static getNowTimestampObject() {
     const nowDate = new Date();
-    const timestamp = { year: nowDate.getFullYear(), month: nowDate.getMonth()+1, day: nowDate.getDate(),
-                        hour: nowDate.getHours(), minute: nowDate.getMinutes() };
-    const timestampString = MessageQueue.getTimestampString(
-      timestamp.year, timestamp.month, timestamp.day,
-      timestamp.hour, timestamp.minute);
+    const nowTimestampObject = { year: nowDate.getFullYear(), month: nowDate.getMonth()+1, day: nowDate.getDate(),
+                                  hour: nowDate.getHours(), minute: nowDate.getMinutes()};
+    return nowTimestampObject;
+  }
+
+  static getNowTimestampNumber() {
+    const timestampObject = MessageQueue.getNowTimestampObject();
+    const timestampString = MessageQueue.getTimestampStringFromObject(timestampObject);
     const timestampNumber = MessageQueue.getTimestampNumber(timestampString);
     return timestampNumber;            
   }
 
   static parseDateAndTime(date, time) {
-    const nowDate = new Date();
-    const now = { year: nowDate.getFullYear(), month: nowDate.getMonth()+1, day: nowDate.getDate(),
-                  hour: nowDate.getHours(), minute: nowDate.getMinutes() };
-    let parsed = Object.assign(now);
+    // get now - use it for defaults
+    const nowTimestampObject = MessageQueue.getNowTimestampObject();;
 
-    if (date) {               
-      const dateParts = date.split('-');
+    let parsed = Object.assign(nowTimestampObject);
+
+    if (date) {
+      // const parsedDate = new Date(temp);
+      // parsed.year = parsedDate.getYear();
+      // parsed.month = parsedDate.getMonth();
+      // parsed.day = parsedDate.getDay();
+
+      let temp = date;
+      const indexOfT = temp.indexOf('T');
+      if (indexOfT){
+        temp = temp.substr(0, indexOfT);
+      }    
+      const dateParts = temp.split('-');
       if (dateParts.length > 3) {
         throw `invalid date ${date}`;
       } else if (dateParts.length == 3) {
@@ -62,27 +63,33 @@ class MessageQueue {
       } else if (dateParts.length == 1) {
         parsed.day = Number.parseInt(dateParts[0]);
       }
-      if (parsed.year != now.year) {
+      if (parsed.year > nowTimestampObject.year) {
         throw `Invalid date ${date} - Year must be ${now.year}`;
       }
       if (parsed.month != 2) {
         throw `Invalid date ${date} - Month must be February`;
       }
-      if (parsed.day < 1 || parsed.day > 31) {
-        throw `Invalid date ${date} - Day must be between 1 and 31`;       
-      }
-      // if (parsed.year < now.year) {
-      //   throw `invalid date ${date} - Year is in the past`; 
-      // }
-      // if (parsed.month < now.month) {
-      //   throw `invalid date ${date} - Month is in the past`; 
-      // }
-      if (parsed.day < now.day) {
-        throw `Invalid date ${date} - Day is in the past`; 
+      if (parsed.day < 1 || parsed.day > 28) {
+        throw `Invalid date ${date} - Day must be between 1 and 28`;       
       }
     }
+
     if (time) {
-      const timeParts = time.split(':');
+      // const parsedTime = new Date(time);
+      // parsed.hour = parseTime.getHours();
+      // parsed.minute = parseMinut.getMinutes();
+ 
+      let temp = time;
+      const indexOfT = temp.indexOf('T');
+      if (indexOfT){
+        temp = temp.substr(indexOfT+1);
+      }
+      const indexOfDash = temp.indexOf('-');
+      if (indexOfDash){
+        temp = temp.substr(0, indexOfDash);
+      }    
+ 
+      const timeParts = temp.split(':');
       if (timeParts.length > 3) {
         throw `Invalid time ${time}`;
       } else if (timeParts.length == 3 || timeParts.length == 2) {
@@ -102,14 +109,18 @@ class MessageQueue {
     }
 
     // adjust time to PM
-    if (now.year === parsed.now && now.year === parsed.now && now.year === parsed.now
-        && now.hour >= parsed.hour && parsed.hour < 12) {
+    if (nowTimestampObject.year === parsed.now
+        && nowTimestampObject.year === parsed.month
+        && nowTimestampObject.day === parsed.day
+        && nowTimestampObject.hour >= parsed.hour
+        && parsed.hour < 12) {
       parsed.hour += 12;
     }
 
     return parsed;
   }
 
+  
   static getTimestampString(year, month, day, hour, minute) {
     return year.toString().padStart(4,0)
             + month.toString().padStart(2,0)
@@ -118,49 +129,45 @@ class MessageQueue {
             + minute.toString().padStart(2,0);
   }
 
+  static getTimestampStringFromObject(timestampObject) {
+    const timestampString = MessageQueue.getTimestampString(
+      timestampObject.year, timestampObject.month, timestampObject.day,
+      timestampObject.hour, timestampObject.minute);
+    return timestampString;
+  }
+
   static getTimestampNumber(timeString) {
     return new Number(timeString);
   }
 
-
   addMessage(sessionId, message, date, time) {
-    const timestamp = MessageQueue.parseDateAndTime(date, time);
-    const timestampString = MessageQueue.getTimestampString(
-        timestamp.year, timestamp.month, timestamp.day,
-        timestamp.hour, timestamp.minute);
+    const nowTimestampNumber = MessageQueue.getNowTimestampNumber();
+
+    const timestampObject = MessageQueue.parseDateAndTime(date, time);
+    const timestampString = MessageQueue.getTimestampStringFromObject(timestampObject);
     const timestampNumber = MessageQueue.getTimestampNumber(timestampString);
 
-    let timestampObject = this.map.get(timestampString);
-    if (!timestampObject) {
-      timestampObject = { timestamp, timestampString, timestampNumber, messages: [] };
-      this.map.set(timestampString, timestampObject);
+    if (timestampNumber < nowTimestampNumber) {
+      throw `Requested message time is in the past`;
     }
-    const messageObject = { sessionId, id: this.nextId++, message, displayCount: 0 };
-    timestampObject.messages.push(messageObject);
+
+    let timestampMapObject = this.map.get(timestampString);
+    if (!timestampMapObject) {
+      timestampMapObject = { timestampObject, timestampString, timestampNumber, messages: [] };
+      this.map.set(timestampString, timestampMapObject);
+    }
+    const id = this.nextId++;
+
+    console.log("addMessage:", sessionId, id, message, date, time);
+
+    const messageObject = { sessionId, id, message, displayCount: 0 };
+    timestampMapObject.messages.push(messageObject);
     this.writeMessages();
 
     this.displayNextMessage();
 
     return messageObject;
   }
-
-  // addMessageToFile(message, date, time) {
-  //   const fs = require('fs');
-
-  //   const messageLine = message + ";" + date + ";" + time;
-
-  //   fs.appendFileSync(messageQueueFileName, );
-  // }
-
-  //
-  // see http://2ality.com/2015/08/es6-map-json.html
-  //
-  // static mapToJson(map) {
-  //   return JSON.stringify([...map]);
-  // }
-  // static jsonToMap(jsonStr) {
-  //     return new Map(JSON.parse(jsonStr));
-  // }
 
   loadMessages(fileName) {
     if (!fileName) {
@@ -196,8 +203,10 @@ class MessageQueue {
     //console.log(`writing messages complete`);
   }
 
+  // note that the message are put into the array as they arrive
+  // so they are also extacted from the array in that order
   getNextMessage() {
-    const currentTimestampNumber = MessageQueue.getCurrentTimestampNumber();
+    const currentTimestampNumber = MessageQueue.getNowTimestampNumber();
     for (const timestampNumber of this.map.keys()) {
       if (timestampNumber > currentTimestampNumber) {
         break;
@@ -215,14 +224,14 @@ class MessageQueue {
 
   // getActiveMessages() {
   //   const activeMessages = [];
-  //   const currentTimestampNumber = MessageQueue.getCurrentTimestampNumber();
+  //   const currentTimestampNumber = MessageQueue.getNowTimestampNumber();
   //   for (const timestampNumber of map.keys()) {
   //     if (timestampNumber > currentTimestampNumber) {
   //       break;
   //     }
   //     const messageObject = map.get(timestampNumber);
   //     if (messageObject.displayCount >= maximumDisplayCount) {
-      
+  //    
   //     } else {
   //       activeMessages.push(messageObject);
   //     }
@@ -255,15 +264,14 @@ class MessageQueue {
     if (this.timerId === undefined || this.timerId === null) {
       let messageObject = this.getNextMessage();
       if (messageObject) {
-        this.displayMessage(messageObject.message);
-        this.showingDefault = false;
-        messageObject.displayCount += 1;
+        this.displayMessage(messageObject, messageObject.message);
+        this.showingDefaultMessage = false;
         this.writeMessages();
         this.timerId = setTimeout(this.onTimeout.bind(this), messageDuration);
       } else {
-        if (!this.showingDefault) {
-          this.displayMessage(defaultMessage);
-          this.showingDefault = true;
+        if (!this.showingDefaultMessage) {
+          this.displayMessage(null, defaultMessage);
+          this.showingDefaultMessage = true;
         }
         this.timerId = setTimeout(this.onTimeout.bind(this), defaultMessageDuration);
       }
@@ -275,33 +283,50 @@ class MessageQueue {
     this.displayNextMessage();
   }
 
-  displayMessage(message) {
+  displayMessage(messageObject, message) {
     // http://10.0.0.100/gui_05/index.html?SetTextTicker=this+is+a+testset+own+tickertext+here
-    console.log(`message "${message}"`);
+    console.log(`displayMessage: "${message}"`);
     const uriEncodedMessage = encodeURIComponent(message);
-    http.get(`http://10.0.0.100/gui_05/index.html?SetTextTicker=xoxoxoxoxoxoxoxox`, 
-      function(response) {
-        const statusCode = response.statusCode;
-        if (statusCode != 200) {
-          console.log("displayMessage non-200 response status code:");
-        }
-        else {
-          const uriEncodedMessage = encodeURIComponent(message);
-          http.get(`http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`, 
-            function(response) {
-              const statusCode = response.statusCode;
-              if (statusCode != 200) {
-                console.log("displayMessage non-200 response status code:");
-                return;
-              }
-          });
-        }
-      });
-  }
 
+    function onResponse(response) {  
+      const statusCode = response.statusCode;
+      if (statusCode == 200) {
+        if (messageObject != null && messageObject !== undefined) {
+          messageObject.displayed = true;
+          this.writeMessages();
+        }
+      }
+      else {
+        console.error(`displayMessage: response status code: ${statusCode}`);
+        return;
+      }
+    }
+
+    const url = `http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`;
+    http.get(url, onResponse)
+      .on('error',
+        function(error) {
+          console.error(`displayMessage: error: ${error.message}`);
+        }
+      );
+  }
 }
 
 module.exports = { MessageQueue };
+
+
+function getFutureTime(minutes) {
+  let temp = new Date();
+  temp = new Date(temp.getTime() + minutes*60*1000);
+  const result = temp.getFullYear().toString().padStart(4,0)
+                + '-' + (temp.getMonth() + 1).toString().padStart(2,0)
+                + '-' + (temp.getDate()).toString().padStart(2,0)
+                + 'T' + (temp.getHours()).toString().padStart(2,0)
+                + ':' + (temp.getMinutes()).toString().padStart(2,0)
+                + ':' + (temp.getSeconds()).toString().padStart(2,0)
+                + '-0600';
+  return result;
+}
 
 function test() {
   const queue = new MessageQueue();
@@ -317,17 +342,40 @@ function test() {
   // queue.loadMessages("testMessageQueue.json");
   // queue.writeMessages("testMessageQueue.json");
 
+  queue.displayNextMessage();
+
   queue.addMessage('1', "Sue, I love you, Billy.  ");
-  queue.addMessage('2', "Bernadette, Will you be my Valentine, Christopher.  ");
-  queue.addMessage('3', "Sally, Will you marry me? Harry.  ");
+  queue.addMessage('2', "Bernadette, Will you be my Valentine, Christopher.  ", null, getFutureTime(1));
+  queue.addMessage('3', "Sally, Will you marry me? Harry.  ", null, getFutureTime(1));
 
   function addMore() {
     queue.addMessage('1', "Amy, I love you, Sheldon.  ");
-    queue.addMessage('2', "Cinnamon, I love you, Raj.  ", null, "20:31");
-    queue.addMessage('1', "Penny, Will you be my Valentine? Leonard.  ", null, "20:31");
-    queue.addMessage('3', "Bernadette, Will you marry me? Howard.  ", "2-14", "20:00");
+    queue.addMessage('2', "Cinnamon, I love you, Raj.  ", null, getFutureTime(2));
+    queue.addMessage('1', "Penny, Will you be my Valentine? Leonard.  ", null, getFutureTime(2));
+    queue.addMessage('3', "Bernadette, Will you marry me? Howard.  ", "2018-02-14T19:07:00-0600", "2018-02-14T19:07:00-0600");
   }
   setTimeout(addMore, 15000);
 }
 
-// test();
+
+test();
+
+
+
+  // addMessageToFile(message, date, time) {
+  //   const fs = require('fs');
+  //
+  //   const messageLine = message + ";" + date + ";" + time;
+  //
+  //   fs.appendFileSync(messageQueueFileName, );
+  // }
+
+  //
+  // see http://2ality.com/2015/08/es6-map-json.html
+  //
+  // static mapToJson(map) {
+  //   return JSON.stringify([...map]);
+  // }
+  // static jsonToMap(jsonStr) {
+  //     return new Map(JSON.parse(jsonStr));
+  // }
