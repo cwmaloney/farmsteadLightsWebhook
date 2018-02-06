@@ -162,6 +162,14 @@ class MessageQueue {
     console.log("addMessage:", sessionId, id, message, date, time);
 
     const messageObject = { sessionId, id, message, displayCount: 0 };
+    if (date) {
+      messageObject.formattedDate = (timestampObject.month).toString().padStart(2,0)
+                                      + '/' + (timestampObject.day).toString().padStart(2,0);
+    }
+    if (time) {
+      messageObject.formattedTime = (timestampObject.hour).toString().padStart(2,0)
+                                      + ':' + (timestampObject.minute).toString().padStart(2,0);
+    }
     timestampMapObject.messages.push(messageObject);
     this.writeMessages();
 

@@ -982,15 +982,15 @@ function addMessage(request, response) {
 
   const message = formatMessage(sender, recipient, messageType);
   
-  console.log(`addMessage: ${message}, ${date}, ${time}`);
   const messageObject = messageQueue.addMessage(request.sessionId, message, date, time);
 
   // let responseMessage = `*** We are currently testing Valentines so your message NOT be display. Try this in a few days. Watch for your message "${message}".`
   let responseMessage = `Watch for your message "${message}"`;
-  if (date) {
-    responseMessage += ` on ${messageObject.date}`;
-  } else if (time) {
-    responseMessage += ` at ${messageObject.time}`;
+  if (date != null && date != undefined && date.length > 0) {
+    responseMessage += ` on ${messageObject.formattedDate}`;
+  }
+  if (time != null && date != undefined && time.length > 0) {
+    responseMessage += ` at ${messageObject.formattedTime}`;
   }
   responseMessage += `. Your message id is ${messageObject.id}.`;
   fillResponse(request, response, responseMessage);
