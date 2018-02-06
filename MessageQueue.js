@@ -315,28 +315,28 @@ class MessageQueue {
     console.log(`displayMessage: "${message}"`);
     const uriEncodedMessage = encodeURIComponent(message);
 
-    // function onResponse(response) {  
-    //   const statusCode = response.statusCode;
-    //   if (statusCode == 200) {
+    function onResponse(response) {  
+      const statusCode = response.statusCode;
+      if (statusCode == 200) {
         if (messageObject != null && messageObject !== undefined) {
           messageObject.displayCount += 1;
           this.writeMessages();
         }
-    //   }
-    //   else {
-    //     console.error(`displayMessage: response status code: ${statusCode}`);
-    //     return;
-    //   }
-    // }
+      }
+      else {
+        console.error(`displayMessage: response status code: ${statusCode}`);
+        return;
+      }
+    }
 
 
-    // const url = `http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`;
-    // http.get(url, onResponse)
-    //   .on('error',
-    //     function(error) {
-    //       console.error(`displayMessage: error: ${error.message}`);
-    //     }
-    //   );
+    const url = `http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`;
+    http.get(url, onResponse)
+      .on('error',
+        function(error) {
+          console.error(`displayMessage: error: ${error.message}`);
+        }
+      );
   }
 }
 
