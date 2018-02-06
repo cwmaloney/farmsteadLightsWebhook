@@ -955,8 +955,8 @@ function addMessage(request, response) {
     return;
   }
  
-  let date = request.parameters.date;
-  let time = request.parameters.time;
+  let date = request.parameters.displayDate;
+  let time = request.parameters.displayTime;
  
   console.log(`addMessage: From: ${sender} To: ${recipient} Message: ${messageType} On: ${date} At: ${time}`);
 
@@ -985,8 +985,8 @@ function addMessage(request, response) {
   console.log(`addMessage: ${message}, ${date}, ${time}`);
   const messageObject = messageQueue.addMessage(request.sessionId, message, date, time);
 
-  let responseMessage = `*** We are currently testing Valentines so your message NOT be display. Try this in a few days. Watch for your message "${message}".`
-  //let responseMessage = `Watch for your message "${message}"`;
+  // let responseMessage = `*** We are currently testing Valentines so your message NOT be display. Try this in a few days. Watch for your message "${message}".`
+  let responseMessage = `Watch for your message "${message}"`;
   if (date) {
     responseMessage += ` on ${messageObject.date}`;
   } else if (time) {
@@ -1000,15 +1000,15 @@ function formatMessage(sender, recipient, messageType, date, time) {
   let message = ''
 
   if (messageType === "Valentine" || !messageType) {
-    message = `${recipient}, Will you be my Valentine? ${sender}`;
+    message = `${recipient}, Will you be my Valentine? ${sender}.  `;
   } else if (messageType === "love") {
-    message = `${recipient}, I love you, ${sender}`;
+    message = `${recipient}, I love you, ${sender}.  `;
   } else if (messageType === "like") {
-    message = `${recipient}, I like you, ${sender}`;
+    message = `${recipient}, I like you, ${sender}.  `;
   } else if (messageType === "marry") {
-    message = `${recipient}, Will you marry me? ${sender}`;
+    message = `${recipient}, Will you marry me? ${sender}.  `;
   } else if (messageType == "friend") {
-    message = `${recipient}, Thank you for being my friend, ${sender}`;
+    message = `${recipient}, Thank you for being my friend, ${sender}.  `;
   }
 
   return message;
@@ -1391,3 +1391,5 @@ function idleCheck()
 }
 
 setTimeout(idleCheck, ideCheckTimeout);
+
+messageQueue.displayNextMessage();
