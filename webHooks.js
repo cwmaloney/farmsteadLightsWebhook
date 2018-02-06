@@ -969,13 +969,13 @@ function addMessage(request, response) {
   // check names
   let senderOkay = nameManager.isNameValid(sender);
   if (!senderOkay) {
-    let message = "We do not reconginze the sender name";
+    let message = "We do not recognize the sender name";
     fillResponse(request, response, message);
     return;
   }
   let recipientOkay = nameManager.isNameValid(recipient);
   if (!recipientOkay) {
-    let message = "We do not reconginze the recipient name";
+    let message = "We do not recognize the recipient name";
     fillResponse(request, response, message);
     return;
   }
