@@ -1,10 +1,12 @@
+"use strict";
+
 const fs = require('fs');
-const https = require("https");
+const http = require("http");
 
 const messageQueueFileName = 'messageQueue.json';
-const messageDuration = 10000;
+const messageDuration = 30000;
 
-const defaultMessageDuration = 10000;
+const defaultMessageDuration = 1000;
 const defaultMessage = "Happy Valentine's Day - go to farmsteadLights.com to display your Valentine here";
 
 const madrixServerAddress = "server";
@@ -14,6 +16,7 @@ class MessageQueue {
   constructor() {
     this.nextId = 1;
     this.map = new Map();
+    this.showingDefault = false;
   }
 
   // getTimestamp(date, time) {
@@ -135,6 +138,9 @@ class MessageQueue {
     const messageObject = { sessionId, id: this.nextId++, message, displayCount: 0 };
     timestampObject.messages.push(messageObject);
     this.writeMessages();
+
+    this.displayNextMessage();
+
     return messageObject;
   }
 
@@ -181,24 +187,27 @@ class MessageQueue {
     if (!fileName) {
       fileName = messageQueueFileName;
     }
-    console.log(`writing messages to ${fileName} nextId=${this.nextId} size=${this.map.size} ...`);
+    //console.log(`writing messages to ${fileName} nextId=${this.nextId} size=${this.map.size} ...`);
 
     const temp = { nextId: this.nextId, map: [...this.map] };
 
     fs.writeFileSync(fileName, JSON.stringify(temp, null, '\t'), 'utf8');
 
-    console.log(`writing messages complete`);
+    //console.log(`writing messages complete`);
   }
 
   getNextMessage() {
     const currentTimestampNumber = MessageQueue.getCurrentTimestampNumber();
-    for (const timestampNumber of map.keys()) {
+    for (const timestampNumber of this.map.keys()) {
       if (timestampNumber > currentTimestampNumber) {
         break;
       }
-      const messageObject = map.get(timestampNumber);
-      if (messageObject.displayCount < 1) {      
-        return messageObject;
+      const timestampObject = this.map.get(timestampNumber);
+      for (let index = 0; index < timestampObject.messages.length; index++) {
+        let messageObject = timestampObject.messages[index];
+        if (messageObject.displayCount === undefined || messageObject.displayCount < 1) {      
+          return messageObject;
+        }
       }
     }
     return null;
@@ -244,41 +253,50 @@ class MessageQueue {
   
   displayNextMessage() {
     if (this.timerId === undefined || this.timerId === null) {
-      let message = this.getNextMessage();
-      if (message) {
-        this.displayMessage(message);
-        message.displayCount += 1;
-        writeMessages();
-        this.timerId = setTimeout(this.onThrottleTimeout.bind(this), this.messageDuration);
+      let messageObject = this.getNextMessage();
+      if (messageObject) {
+        this.displayMessage(messageObject.message);
+        this.showingDefault = false;
+        messageObject.displayCount += 1;
+        this.writeMessages();
+        this.timerId = setTimeout(this.onTimeout.bind(this), messageDuration);
       } else {
-        this.displayMessage(defaultMessage);
-        this.timerId = setTimeout(this.onThrottleTimeout.bind(this), this.defaultMessageDuration);
+        if (!this.showingDefault) {
+          this.displayMessage(defaultMessage);
+          this.showingDefault = true;
+        }
+        this.timerId = setTimeout(this.onTimeout.bind(this), defaultMessageDuration);
       }
     }
   }
+  
+  onTimeout(ignore) {
+    this.timerId = null;
+    this.displayNextMessage();
+  }
 
   displayMessage(message) {
-    console.log(`message "${displayMessage}"`);
-    const uriEncodedMessage = encodeURIComponent(mesage);
-    https.get(`http://${madrixServerAddress}/setScroller?message=${uriEncodedMessage}`, 
+    // http://10.0.0.100/gui_05/index.html?SetTextTicker=this+is+a+testset+own+tickertext+here
+    console.log(`message "${message}"`);
+    const uriEncodedMessage = encodeURIComponent(message);
+    http.get(`http://10.0.0.100/gui_05/index.html?SetTextTicker=xoxoxoxoxoxoxoxox`, 
       function(response) {
-        var statusCode = res.statusCode;
+        const statusCode = response.statusCode;
         if (statusCode != 200) {
           console.log("displayMessage non-200 response status code:");
-          return;
         }
-        response.on("data", function(data) {
-          console.log(`displayMessage on data "${data}"`);
-        });
-        response.on("end", function() {
-          console.log(`displayMessage on end`);
-        });
+        else {
+          const uriEncodedMessage = encodeURIComponent(message);
+          http.get(`http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`, 
+            function(response) {
+              const statusCode = response.statusCode;
+              if (statusCode != 200) {
+                console.log("displayMessage non-200 response status code:");
+                return;
+              }
+          });
+        }
       });
-  }
-  
-  onTimeout() {
-    this.timerId = null;
-    this.sendNextMessage();
   }
 
 }
@@ -288,16 +306,28 @@ module.exports = { MessageQueue };
 function test() {
   const queue = new MessageQueue();
 
-  queue.loadMessages("noFile");
+  // queue.loadMessages("noFile");
 
-  queue.addMessage("Amy, I love you, Sheldon");
-  queue.addMessage("Cinnamon, I love you, Raj", null, "15:01");
-  queue.addMessage("Penny, Will you be my Valentine?, Leonard", null, "15:01");
-  queue.addMessage("Bernadette, Will you marry me? Howard", "2-14", "20:00");
+  // queue.addMessage('1', "Amy, I love you, Sheldon");
+  // queue.addMessage('2', "Cinnamon, I love you, Raj", null, "15:01");
+  // queue.addMessage('1', "Penny, Will you be my Valentine?, Leonard", null, "15:01");
+  // queue.addMessage('3', "Bernadette, Will you marry me? Howard", "2-14", "20:00");
 
-  queue.writeMessages("testMessageQueue.json");
-  queue.loadMessages("testMessageQueue.json");
-  queue.writeMessages("testMessageQueue.json");
+  // queue.writeMessages("testMessageQueue.json");
+  // queue.loadMessages("testMessageQueue.json");
+  // queue.writeMessages("testMessageQueue.json");
+
+  queue.addMessage('1', "Sue, I love you, Billy.  ");
+  queue.addMessage('2', "Bernadette, Will you be my Valentine, Christopher.  ");
+  queue.addMessage('3', "Sally, Will you marry me? Harry.  ");
+
+  function addMore() {
+    queue.addMessage('1', "Amy, I love you, Sheldon.  ");
+    queue.addMessage('2', "Cinnamon, I love you, Raj.  ", null, "20:31");
+    queue.addMessage('1', "Penny, Will you be my Valentine? Leonard.  ", null, "20:31");
+    queue.addMessage('3', "Bernadette, Will you marry me? Howard.  ", "2-14", "20:00");
+  }
+  setTimeout(addMore, 15000);
 }
 
-//test();
+// test();
