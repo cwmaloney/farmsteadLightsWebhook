@@ -214,12 +214,28 @@ class MessageQueue {
       const timestampObject = this.map.get(timestampNumber);
       for (let index = 0; index < timestampObject.messages.length; index++) {
         let messageObject = timestampObject.messages[index];
-        if (messageObject.displayCount === undefined || messageObject.displayCount < 1) {      
+        if (messageObject.displayCount === undefined || messageObject.displayCount < 0) {      
           return messageObject;
         }
       }
     }
     return null;
+  }
+
+  
+  getMessageCountForSession(sessionId) {
+    let count = 0;
+    for (const timestampNumber of this.map.keys()) {
+      for (let index = 0; index < timestampObject.messages.length; index++) {
+        const messageObject = timestampObject.messages[index];
+        if (messageObject.displayCount === undefined || messageObject.displayCount < 0) {
+          if (messageObject.sessionId === sessionId) {
+            count++;
+          } 
+        }
+      }
+    }
+    return count;
   }
 
   // getActiveMessages() {
@@ -288,27 +304,28 @@ class MessageQueue {
     console.log(`displayMessage: "${message}"`);
     const uriEncodedMessage = encodeURIComponent(message);
 
-    function onResponse(response) {  
-      const statusCode = response.statusCode;
-      if (statusCode == 200) {
+    // function onResponse(response) {  
+    //   const statusCode = response.statusCode;
+    //   if (statusCode == 200) {
         if (messageObject != null && messageObject !== undefined) {
-          messageObject.displayed = true;
+          messageObject.displayCount += 1;
           this.writeMessages();
         }
-      }
-      else {
-        console.error(`displayMessage: response status code: ${statusCode}`);
-        return;
-      }
-    }
+    //   }
+    //   else {
+    //     console.error(`displayMessage: response status code: ${statusCode}`);
+    //     return;
+    //   }
+    // }
 
-    const url = `http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`;
-    http.get(url, onResponse)
-      .on('error',
-        function(error) {
-          console.error(`displayMessage: error: ${error.message}`);
-        }
-      );
+
+    // const url = `http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`;
+    // http.get(url, onResponse)
+    //   .on('error',
+    //     function(error) {
+    //       console.error(`displayMessage: error: ${error.message}`);
+    //     }
+    //   );
   }
 }
 
@@ -344,15 +361,17 @@ function test() {
 
   queue.displayNextMessage();
 
+  const soon = getFutureTime(2);
   queue.addMessage('1', "Sue, I love you, Billy.  ");
-  queue.addMessage('2', "Bernadette, Will you be my Valentine, Christopher.  ", null, getFutureTime(1));
-  queue.addMessage('3', "Sally, Will you marry me? Harry.  ", null, getFutureTime(1));
+  queue.addMessage('2', "Bernadette, Will you be my Valentine? Howard.  ", null, soon);
+  queue.addMessage('3', "Sally, Will you marry me? Harry.  ", null, soon);
 
   function addMore() {
     queue.addMessage('1', "Amy, I love you, Sheldon.  ");
-    queue.addMessage('2', "Cinnamon, I love you, Raj.  ", null, getFutureTime(2));
-    queue.addMessage('1', "Penny, Will you be my Valentine? Leonard.  ", null, getFutureTime(2));
-    queue.addMessage('3', "Bernadette, Will you marry me? Howard.  ", "2018-02-14T19:07:00-0600", "2018-02-14T19:07:00-0600");
+    const soon = getFutureTime(2);
+    queue.addMessage('2', "Cinnamon, Will you be my Valentine? Raj  ", null, soon);
+    queue.addMessage('1', "Penny, Will you be my Valentine? Leonard.  ", null, soon);
+    queue.addMessage('3', "Luci, Will you marry me? Desi.  ", "2018-02-14T19:07:00-0600", "2018-02-14T19:07:00-0600");
   }
   setTimeout(addMore, 15000);
 }
