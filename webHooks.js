@@ -950,7 +950,7 @@ function addMessage(request, response) {
   }
  
   let messageType = request.parameters.messageType;
-  if (messageType === undefined || messageType == null) {
+  if (messageType === undefined || messageType === null) {
     console.error('webhook::addMessage - missing messageType');
     return;
   }
@@ -960,11 +960,11 @@ function addMessage(request, response) {
  
   console.log(`addMessage: From: ${sender} To: ${recipient} Message: ${messageType} On: ${date} At: ${time}`);
 
-  const overUseMessage = checkOverUse(request.sessionId, "message");
-  if (overUseMessage != null && overUseMessage != undefined) {
-    fillResponse(request, response, overUseMessage);
-    return; 
-  }
+  // const overUseMessage = checkOverUse(request.sessionId, "message");
+  // if (overUseMessage != null && overUseMessage != undefined) {
+  //   fillResponse(request, response, overUseMessage);
+  //   return; 
+  // }
 
   // check names
   let senderOkay = nameManager.isNameValid(sender);
@@ -982,34 +982,36 @@ function addMessage(request, response) {
 
   const message = formatMessage(sender, recipient, messageType);
   
-  console.log(`addMessage ... ${message}, ${date}, ${time}`);
-  return messageQueue.addMessage(message, date, time);
+  console.log(`addMessage: ${message}, ${date}, ${time}`);
+  const messageObject = messageQueue.addMessage(request.sessionId, message, date, time);
 
-  let responseMessage = `*** We are currently testing this feature. Your message will NOT be display. Try this in a few days. Watch for your message "${message}".`
-  //let responseMessage = `Watch for your message ${message} (${id})`;
-  if (queuedMessage.date && queuedMessage.time) {
-    responseMessage += ` On ${queuedMessage.date} at ${queuedMessage.time}`;
-  } else if (queuedMessage.time) {
-    responseMessage += ` At ${queuedMessage.time}`;
+  let responseMessage = `*** We are currently testing Valentines so your message NOT be display. Try this in a few days. Watch for your message "${message}".`
+  //let responseMessage = `Watch for your message "${message}"`;
+  if (date) {
+    responseMessage += ` on ${messageObject.date}`;
+  } else if (time) {
+    responseMessage += ` at ${messageObject.time}`;
   }
-  responseMessage += ` (Your request id is ${id}.)`;
+  responseMessage += `. Your message id is ${messageObject.id}.`;
   fillResponse(request, response, responseMessage);
 }
 
 function formatMessage(sender, recipient, messageType, date, time) {
   let message = ''
 
-  if (messageType === "valentine" || !messageType) {
-    message = `${recipient}, Will you be my Valentine?, ${sender}`;
+  if (messageType === "Valentine" || !messageType) {
+    message = `${recipient}, Will you be my Valentine? ${sender}`;
   } else if (messageType === "love") {
     message = `${recipient}, I love you, ${sender}`;
+  } else if (messageType === "like") {
+    message = `${recipient}, I like you, ${sender}`;
   } else if (messageType === "marry") {
-    message = `${recipient}, Will you marry me?, ${sender}`;
+    message = `${recipient}, Will you marry me? ${sender}`;
   } else if (messageType == "friend") {
     message = `${recipient}, Thank you for being my friend, ${sender}`;
   }
 
-  return `${message}`;
+  return message;
 }
 
 //////////////////////////////////////////////////////////////////////////////
