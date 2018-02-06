@@ -960,11 +960,11 @@ function addMessage(request, response) {
  
   console.log(`addMessage: From: ${sender} To: ${recipient} Message: ${messageType} On: ${date} At: ${time}`);
 
-  // const overUseMessage = checkOverUse(request.sessionId, "message");
-  // if (overUseMessage != null && overUseMessage != undefined) {
-  //   fillResponse(request, response, overUseMessage);
-  //   return; 
-  // }
+  const overUseMessage = messageQueue.checkOverUse(request.sessionId);
+  if (overUseMessage != null && overUseMessage != undefined) {
+    fillResponse(request, response, overUseMessage);
+    return; 
+  }
 
   // check names
   let senderOkay = nameManager.isNameValid(sender);

@@ -5,6 +5,7 @@ const http = require("http");
 
 const messageQueueFileName = 'messageQueue.json';
 const messageDuration = 20000;
+const maxMessagesPerSession = 3;
 
 const defaultMessageDuration = 1000;
 const defaultMessage = "Happy Valentine's Day - go to farmsteadLights.com to display your Valentine here";
@@ -222,7 +223,17 @@ class MessageQueue {
     return null;
   }
 
+  checkOverUse(sessionId) {
+    let message = null;
+
+    const count = getMessageCountForSession(sessionId);   
+    if (count >= maxMessagesPerSession) {
+      message = `You have two many message in the queue.  Try again after your messages have been displayed.`;
+    }
   
+    return message;
+  }
+    
   getMessageCountForSession(sessionId) {
     let count = 0;
     for (const timestampNumber of this.map.keys()) {
