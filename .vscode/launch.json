@@ -7,26 +7,32 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch ArtNet Test",
-      "program": "${workspaceFolder}/artNetTest.js"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Launch Server",
       "program": "${workspaceFolder}/webHooks.js"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Test Message Queue",
+      "name": "Launch ArtNet Test",
+      "program": "${workspaceFolder}/artNetTest.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test MessageQueue",
       "program": "${workspaceFolder}/MessageQueue.js"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Test Name Manager",
+      "name": "Test NameManager",
       "program": "${workspaceFolder}/NameManager.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test HttpUtilities",
+      "program": "${workspaceFolder}/HttpUtilities.js"
     }
   ]
 }
