@@ -134,6 +134,7 @@ class MessageQueue {
     }
     const messageObject = { sessionId, id: this.nextId++, message, displayCount: 0 };
     timestampObject.messages.push(messageObject);
+    this.writeMessages();
     return messageObject;
   }
 
