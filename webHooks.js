@@ -982,7 +982,13 @@ function addMessage(request, response) {
 
   const message = formatMessage(sender, recipient, messageType);
   
-  const messageObject = messageQueue.addMessage(request.sessionId, message, date, time);
+  try {
+    const messageObject = messageQueue.addMessage(request.sessionId, message, date, time);
+  } catch (error) {
+    let message = error.toString();
+    fillResponse(request, response, message);
+    return;
+  }
 
   // let responseMessage = `*** We are currently testing Valentines so your message NOT be display. Try this in a few days. Watch for your message "${message}".`
   let responseMessage = `Watch for your message "${message}"`;

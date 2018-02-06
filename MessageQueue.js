@@ -1,16 +1,29 @@
 "use strict";
 
-const fs = require('fs');
-const http = require("http");
+// configuration
+
+// 
+const setStoragePlaceBaseUrl = "http://10.0.0.100/RemoteCommands/SetStorageLeft=";
+const setTickerTextBaseUrl = "http://10.0.0.100/gui_05/index.html?SetTextTicker=";
+
+// for testing
+// const setStoragePlaceBaseUrl = "http://scooterlabs.com/echo?storagePlace=";
+// const setTickerTextBaseUrl = "http://scooterlabs.com/echo?tickerText=";
+
+const storagePlaceRose = "S15P63";
+const storagePlaceHeart = "S15P64";
 
 const messageQueueFileName = 'messageQueue.json';
-const messageDuration = 20000;
+const messageDuration = 5000;
 const maxMessagesPerSession = 3;
 
 const defaultMessageDuration = 1000;
 const defaultMessage = "Happy Valentine's Day - go to farmsteadLights.com to display your Valentine here";
 
-const madrixServerAddress = "server";
+// load dependent modules
+
+const fs = require('fs');
+const { HttpUtilities } = require("./HttpUtilities");
 
 class MessageQueue {
 
@@ -53,7 +66,7 @@ class MessageQueue {
       }    
       const dateParts = temp.split('-');
       if (dateParts.length > 3) {
-        throw `invalid date ${date}`;
+        throw new Error(`invalid date ${date}`);
       } else if (dateParts.length == 3) {
         parsed.year = Number.parseInt(dateParts[0]);
         parsed.month = Number.parseInt(dateParts[1]);
@@ -65,13 +78,13 @@ class MessageQueue {
         parsed.day = Number.parseInt(dateParts[0]);
       }
       if (parsed.year > nowTimestampObject.year) {
-        throw `Invalid date ${date} - Year must be ${now.year}`;
+        throw new Error(`Invalid date ${date} - Year must be ${now.year}`);
       }
       if (parsed.month != 2) {
-        throw `Invalid date ${date} - Month must be February`;
+        throw new Error(`Invalid date ${date} - Month must be February`);
       }
       if (parsed.day < 1 || parsed.day > 28) {
-        throw `Invalid date ${date} - Day must be between 1 and 28`;       
+        throw new Error(`Invalid date ${date} - Day must be between 1 and 28`);       
       }
     }
 
@@ -92,7 +105,7 @@ class MessageQueue {
  
       const timeParts = temp.split(':');
       if (timeParts.length > 3) {
-        throw `Invalid time ${time}`;
+        throw new Error(`Invalid time ${time}`);
       } else if (timeParts.length == 3 || timeParts.length == 2) {
         parsed.hour = Number.parseInt(timeParts[0]);
         parsed.minute = Number.parseInt(timeParts[1]);
@@ -102,10 +115,10 @@ class MessageQueue {
         parsed.minute = 0;
       }
       if (parsed.hour < 0 || parsed.hour > 23) {
-        throw `Invalid time ${time} - Hour must be between 0 and 23`;
+        throw new Error(`Invalid time ${time} - Hour must be between 0 and 23`);
       }
       if (parsed.minute < 0 || parsed.minute > 59) {
-        throw `Invalid time ${time} - Minute must be between 0 and 59`;
+        throw new Error(`Invalid time ${time} - Minute must be between 0 and 59`);
       }
     }
 
@@ -149,7 +162,7 @@ class MessageQueue {
     const timestampNumber = MessageQueue.getTimestampNumber(timestampString);
 
     if (timestampNumber < nowTimestampNumber) {
-      throw `Requested message time is in the past`;
+      throw new Error(`Requested message time is in the past`);
     }
 
     let timestampMapObject = this.map.get(timestampString);
@@ -214,9 +227,11 @@ class MessageQueue {
     //console.log(`writing messages complete`);
   }
 
-  // note that the message are put into the array as they arrive
-  // so they are also extacted from the array in that order
-  getNextMessage() {
+
+  // get messages that have display times "in the past"
+  // and have not been displayed
+  getActiveMessages() {
+    const activeMessages = [];
     const currentTimestampNumber = MessageQueue.getNowTimestampNumber();
     for (const timestampNumber of this.map.keys()) {
       if (timestampNumber > currentTimestampNumber) {
@@ -226,11 +241,26 @@ class MessageQueue {
       for (let index = 0; index < timestampObject.messages.length; index++) {
         let messageObject = timestampObject.messages[index];
         if (messageObject.displayCount === undefined || messageObject.displayCount < 1) {      
-          return messageObject;
+          activeMessages.push(messageObject);
         }
       }
     }
-    return null;
+    return activeMessages;
+  }
+
+  getNextMessage() {
+    const activeMessages = this.getActiveMessages();
+    let nextMessage = null;
+    if (activeMessages.length > 0) {
+      nextMessage = activeMessages[0];
+      for (let index = 1; index < activeMessages.length; index++) {
+        const messageObject = activeMessages[index];
+        if (messageObject.id < nextMessage.id) {      
+          nextMessage = messageObject;
+        }
+      }
+    }
+    return nextMessage;
   }
 
   checkOverUse(sessionId) {
@@ -260,23 +290,6 @@ class MessageQueue {
     return count;
   }
 
-  // getActiveMessages() {
-  //   const activeMessages = [];
-  //   const currentTimestampNumber = MessageQueue.getNowTimestampNumber();
-  //   for (const timestampNumber of map.keys()) {
-  //     if (timestampNumber > currentTimestampNumber) {
-  //       break;
-  //     }
-  //     const messageObject = map.get(timestampNumber);
-  //     if (messageObject.displayCount >= maximumDisplayCount) {
-  //    
-  //     } else {
-  //       activeMessages.push(messageObject);
-  //     }
-  //   }
-  //   return activeMessages;
-  // }
-
   findMessageById(messageId) {
     for (const timestampNumber of map.keys()) {
      const messageObject = map.get(timestampNumber);
@@ -285,31 +298,16 @@ class MessageQueue {
     }
     return null;
   }
-
-  // incrementMessageDisplayCount(messageId) {
-  //   const messageObject = findMessageById(messageId);
-  //   if (!messageObject) {
-  //     console.log(`incrementMessageDisplayCount - missing message ${messageId}`);
-  //     return;
-  //   }
-
-  //   messagesObject.displayCount += 1;
-
-  //   writeMessages();
-  // }
   
   displayNextMessage() {
     if (this.timerId === undefined || this.timerId === null) {
       let messageObject = this.getNextMessage();
-      if (messageObject) {
+      if (messageObject != undefined && messageObject != null) {
         this.displayMessage(messageObject, messageObject.message);
-        this.showingDefaultMessage = false;
-        this.writeMessages();
         this.timerId = setTimeout(this.onTimeout.bind(this), messageDuration);
       } else {
         if (!this.showingDefaultMessage) {
           this.displayMessage(null, defaultMessage);
-          this.showingDefaultMessage = true;
         }
         this.timerId = setTimeout(this.onTimeout.bind(this), defaultMessageDuration);
       }
@@ -321,61 +319,47 @@ class MessageQueue {
     this.displayNextMessage();
   }
 
-  static displayStoragePlace(storagePlace) {
-    const url = `http://10.0.0.100/RemoteCommands/SetStorageLeft=${storagePlace}`;
-    http.get(url,
-      function(response) {
-        const statusCode = response.statusCode;
-        if (statusCode != 200) {
-          console.error(`storagePlace: response status code: ${statusCode}`);
-          return;
-        }
-      }
-    )
-      .on('error',
-        function(error) {
-          console.error(`storagePlace: error: ${error.message}`);
-        }
-      );
-  }
-
-  static displayRose() {
-    this.displayStoragePlace("S15P63");
-  }
-
-  static displayHeart() {
-    this.displayStoragePlace("S15P64");
-  }
-
   displayMessage(messageObject, message) {
-    // http://10.0.0.100/gui_05/index.html?SetTextTicker=this+is+a+testset+own+tickertext+here
+
     console.log(`displayMessage: "${message}"`);
     const uriEncodedMessage = encodeURIComponent(message);
+    
+    const clearTickerTextUrl = `${setTickerTextBaseUrl}...`;
+    const setTickerTextUrl = `${setTickerTextBaseUrl}${uriEncodedMessage}`;
 
-    function onResponse(response) {
-      const statusCode = response.statusCode;
-      if (statusCode == 200) {
-        if (messageObject != null && messageObject !== undefined) {
+    if (messageObject != null && messageObject !== undefined) {
+      const setStoragePlaceUrl = `${setStoragePlaceBaseUrl}${storagePlaceHeart}`;
+
+      HttpUtilities.get(setStoragePlaceUrl, 2000)
+      .then((html) => {
+        this.showingDefaultMessage = false;
+
+        return HttpUtilities.get(clearTickerTextUrl, 2000);
+      })
+      .then((html) => {
+        return HttpUtilities.get(setTickerTextUrl, 2000);
+      })
+      .then((html) => {
           messageObject.displayCount += 1;
-          // MessageQueue.displayHeart();
-          // this.writeMessages();
-        } else {
-          // MessageQueue.displayRose();
-        }
-      }
-      else {
-        console.error(`displayMessage: response status code: ${statusCode}`);
-        return;
-      }
-    }
+          this.writeMessages();
+      })
+      .catch((error) => console.error(error));
+    } else {
+       const setStoragePlaceUrl = `${setStoragePlaceBaseUrl}${storagePlaceRose}`
 
-    const url = `http://10.0.0.100/gui_05/index.html?SetTextTicker=${uriEncodedMessage}`;
-    http.get(url, onResponse)
-      .on('error',
-        function(error) {
-          console.error(`displayMessage: error: ${error.message}`);
-        }
-      );
+      HttpUtilities.get(setStoragePlaceUrl, 2000)
+      .then((html) => {
+        this.showingDefaultMessage = true;
+
+        return HttpUtilities.get(clearTickerTextUrl, 2000);
+      })
+      .then((html) => {
+        return HttpUtilities.get(setTickerTextUrl, 2000);
+      })
+      .then((html) => {
+       })
+      .catch((error) => console.error(error));
+    }
   }
 }
 
@@ -411,40 +395,29 @@ function test() {
 
   queue.displayNextMessage();
 
-  const soon = getFutureTime(2);
-  queue.addMessage('1', "Sue, I love you, Billy.  ");
-  queue.addMessage('2', "Bernadette, Will you be my Valentine? Howard.  ", null, soon);
-  queue.addMessage('3', "Sally, Will you marry me? Harry.  ", null, soon);
+  function addList1() {
+    const soon = getFutureTime(2);
+    queue.addMessage('1', "Sue, I love you, Billy.  ");
+    queue.addMessage('2', "Bernadette, Will you be my Valentine? Howard.  ", null, soon);
+    queue.addMessage('3', "Sally, Will you marry me? Harry.  ", null, soon);
+  }
 
-  function addMore() {
+  function noop() {
+  }
+
+  function addList2() {
     queue.addMessage('1', "Amy, I love you, Sheldon.  ");
     const soon = getFutureTime(2);
     queue.addMessage('2', "Cinnamon, Will you be my Valentine? Raj  ", null, soon);
     queue.addMessage('1', "Penny, Will you be my Valentine? Leonard.  ", null, soon);
     queue.addMessage('3', "Luci, Will you marry me? Desi.  ", "2018-02-14T19:07:00-0600", "2018-02-14T19:07:00-0600");
   }
-  setTimeout(addMore, 15000);
+
+  addList1();
+  setTimeout(addList2, 25*1000);
+
+  setTimeout(noop, 5*60*1000);
 }
 
 
-// test();
-
-
-
-  // addMessageToFile(message, date, time) {
-  //   const fs = require('fs');
-  //
-  //   const messageLine = message + ";" + date + ";" + time;
-  //
-  //   fs.appendFileSync(messageQueueFileName, );
-  // }
-
-  //
-  // see http://2ality.com/2015/08/es6-map-json.html
-  //
-  // static mapToJson(map) {
-  //   return JSON.stringify([...map]);
-  // }
-  // static jsonToMap(jsonStr) {
-  //     return new Map(JSON.parse(jsonStr));
-  // }
+test();
