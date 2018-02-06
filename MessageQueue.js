@@ -226,9 +226,9 @@ class MessageQueue {
   checkOverUse(sessionId) {
     let message = null;
 
-    const count = getMessageCountForSession(sessionId);   
+    const count = this.getMessageCountForSession(sessionId);   
     if (count >= maxMessagesPerSession) {
-      message = `You have two many message in the queue.  Try again after your messages have been displayed.`;
+      message = `You have too many message in the queue.  Try again after your messages have been displayed.`;
     }
   
     return message;
@@ -237,9 +237,10 @@ class MessageQueue {
   getMessageCountForSession(sessionId) {
     let count = 0;
     for (const timestampNumber of this.map.keys()) {
+      const timestampObject = this.map.get(timestampNumber);
       for (let index = 0; index < timestampObject.messages.length; index++) {
         const messageObject = timestampObject.messages[index];
-        if (messageObject.displayCount === undefined || messageObject.displayCount < 0) {
+        if (messageObject.displayCount === undefined || messageObject.displayCount < 1) {
           if (messageObject.sessionId === sessionId) {
             count++;
           } 
@@ -315,12 +316,12 @@ class MessageQueue {
     console.log(`displayMessage: "${message}"`);
     const uriEncodedMessage = encodeURIComponent(message);
 
-    function onResponse(response) {  
+    function onResponse(response) {
       const statusCode = response.statusCode;
       if (statusCode == 200) {
         if (messageObject != null && messageObject !== undefined) {
           messageObject.displayCount += 1;
-          this.writeMessages();
+          // this.writeMessages();
         }
       }
       else {
