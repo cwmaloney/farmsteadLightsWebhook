@@ -215,7 +215,7 @@ class MessageQueue {
       const timestampObject = this.map.get(timestampNumber);
       for (let index = 0; index < timestampObject.messages.length; index++) {
         let messageObject = timestampObject.messages[index];
-        if (messageObject.displayCount === undefined || messageObject.displayCount < 0) {      
+        if (messageObject.displayCount === undefined || messageObject.displayCount < 1) {      
           return messageObject;
         }
       }
