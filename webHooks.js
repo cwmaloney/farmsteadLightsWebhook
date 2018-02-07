@@ -984,12 +984,7 @@ function addMessage(request, response) {
   
   try {
     const messageObject = messageQueue.addMessage(request.sessionId, message, date, time);
-  } catch (error) {
-    let message = error.toString();
-    fillResponse(request, response, message);
-    return;
-  }
-
+ 
   // let responseMessage = `*** We are currently testing Valentines so your message NOT be display. Try this in a few days. Watch for your message "${message}".`
   let responseMessage = `Watch for your message "${message}"`;
   if (date != null && date != undefined && date.length > 0) {
@@ -1000,6 +995,11 @@ function addMessage(request, response) {
   }
   responseMessage += `. Your message id is ${messageObject.id}.`;
   fillResponse(request, response, responseMessage);
+  } catch (error) {
+    let message = error.toString();
+    fillResponse(request, response, message);
+    return;
+  }
 }
 
 function formatMessage(sender, recipient, messageType, date, time) {

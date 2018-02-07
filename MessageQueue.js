@@ -14,11 +14,11 @@ const storagePlaceRose = "S15P63";
 const storagePlaceHeart = "S15P64";
 
 const messageQueueFileName = 'messageQueue.json';
-const messageDuration = 5000;
+const messageDuration = 20000;
 const maxMessagesPerSession = 3;
 
 const defaultMessageDuration = 1000;
-const defaultMessage = "Happy Valentine's Day - go to farmsteadLights.com to display your Valentine here";
+const defaultMessage = "Happy Valentine's Day - go to farmsteadLights.com to display your Valentine here.  ";
 
 // load dependent modules
 
@@ -419,5 +419,4 @@ function test() {
   setTimeout(noop, 5*60*1000);
 }
 
-
-test();
+// test();
