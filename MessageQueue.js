@@ -227,6 +227,9 @@ class MessageQueue {
     //console.log(`writing messages complete`);
   }
 
+  getNextMessageId() {
+    return this.nextId;
+  }
 
   // get messages that have display times "in the past"
   // and have not been displayed
@@ -245,6 +248,24 @@ class MessageQueue {
       }
     }
     return activeMessages;
+  }
+
+  // get messages that have display times "in the future"
+  getQueuedMessages() {
+    const queuedMessages = [];
+    const currentTimestampNumber = MessageQueue.getNowTimestampNumber();
+    for (const timestampNumber of this.map.keys()) {
+      if (timestampNumber > currentTimestampNumber) {
+        const timestampObject = this.map.get(timestampNumber);
+        for (let index = 0; index < timestampObject.messages.length; index++) {
+          let messageObject = timestampObject.messages[index];
+          if (messageObject.displayCount === undefined || messageObject.displayCount < 1) {      
+            queuedMessages.push(messageObject);
+          }
+        }
+      }
+    }
+    return queuedMessages;
   }
 
   getNextMessage() {
@@ -378,44 +399,46 @@ function getFutureTime(minutes) {
   return result;
 }
 
-function test() {
-  const queue = new MessageQueue();
+// make test safe to run on "production" computer
 
-  // queue.loadMessages("noFile");
+// function test() {
+//   const queue = new MessageQueue();
 
-  // queue.addMessage('1', "Amy, I love you, Sheldon");
-  // queue.addMessage('2', "Cinnamon, I love you, Raj", null, "15:01");
-  // queue.addMessage('1', "Penny, Will you be my Valentine?, Leonard", null, "15:01");
-  // queue.addMessage('3', "Bernadette, Will you marry me? Howard", "2-14", "20:00");
+//   // queue.loadMessages("noFile");
 
-  // queue.writeMessages("testMessageQueue.json");
-  // queue.loadMessages("testMessageQueue.json");
-  // queue.writeMessages("testMessageQueue.json");
+//   // queue.addMessage('1', "Amy, I love you, Sheldon");
+//   // queue.addMessage('2', "Cinnamon, I love you, Raj", null, "15:01");
+//   // queue.addMessage('1', "Penny, Will you be my Valentine?, Leonard", null, "15:01");
+//   // queue.addMessage('3', "Bernadette, Will you marry me? Howard", "2-14", "20:00");
 
-  queue.displayNextMessage();
+//   // queue.writeMessages("testMessageQueue.json");
+//   // queue.loadMessages("testMessageQueue.json");
+//   // queue.writeMessages("testMessageQueue.json");
 
-  function addList1() {
-    const soon = getFutureTime(2);
-    queue.addMessage('1', "Sue, I love you, Billy.  ");
-    queue.addMessage('2', "Bernadette, Will you be my Valentine? Howard.  ", null, soon);
-    queue.addMessage('3', "Sally, Will you marry me? Harry.  ", null, soon);
-  }
+//   queue.displayNextMessage();
 
-  function noop() {
-  }
+//   function addList1() {
+//     const soon = getFutureTime(2);
+//     queue.addMessage('1', "Sue, I love you, Billy.  ");
+//     queue.addMessage('2', "Bernadette, Will you be my Valentine? Howard.  ", null, soon);
+//     queue.addMessage('3', "Sally, Will you marry me? Harry.  ", null, soon);
+//   }
 
-  function addList2() {
-    queue.addMessage('1', "Amy, I love you, Sheldon.  ");
-    const soon = getFutureTime(2);
-    queue.addMessage('2', "Cinnamon, Will you be my Valentine? Raj  ", null, soon);
-    queue.addMessage('1', "Penny, Will you be my Valentine? Leonard.  ", null, soon);
-    queue.addMessage('3', "Luci, Will you marry me? Desi.  ", "2018-02-14T19:07:00-0600", "2018-02-14T19:07:00-0600");
-  }
+//   function noop() {
+//   }
 
-  addList1();
-  setTimeout(addList2, 25*1000);
+//   function addList2() {
+//     queue.addMessage('1', "Amy, I love you, Sheldon.  ");
+//     const soon = getFutureTime(2);
+//     queue.addMessage('2', "Cinnamon, Will you be my Valentine? Raj  ", null, soon);
+//     queue.addMessage('1', "Penny, Will you be my Valentine? Leonard.  ", null, soon);
+//     queue.addMessage('3', "Luci, Will you marry me? Desi.  ", "2018-02-14T19:07:00-0600", "2018-02-14T19:07:00-0600");
+//   }
 
-  setTimeout(noop, 5*60*1000);
-}
+//   addList1();
+//   setTimeout(addList2, 25*1000);
+
+//   setTimeout(noop, 5*60*1000);
+// }
 
 // test();
