@@ -958,7 +958,7 @@ function addMessage(request, response) {
   let date = request.parameters.displayDate;
   let time = request.parameters.displayTime;
  
-  console.log(`addMessage: From: ${sender} To: ${recipient} Message: ${messageType} On: ${date} At: ${time}`);
+  // console.log(`addMessage: From: ${sender} To: ${recipient} Message: ${messageType} On: ${date} At: ${time}`);
 
   const overUseMessage = messageQueue.checkOverUse(request.sessionId);
   if (overUseMessage != null && overUseMessage != undefined) {
@@ -1146,7 +1146,7 @@ const actionHandlers = {
     const messageCount = messageQueue.getNextMessageId() - 1;
     const activeCount = messageQueue.getActiveMessages().length;
     const queuedCount = messageQueue.getQueuedMessages().length;
-    let message = `Total message requests=${messageCount} ready=${activeCount} future=${queuedCount}`;
+    let message = `Messages: Total requests=${messageCount}  current queue=${activeCount} future queue=${queuedCount}`;
     fillResponse(request, response, message);
   },
 

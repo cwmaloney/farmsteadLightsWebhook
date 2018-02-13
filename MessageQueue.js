@@ -172,7 +172,7 @@ class MessageQueue {
     }
     const id = this.nextId++;
 
-    console.log("addMessage:", sessionId, id, message, date, time);
+    // console.log("addMessage:", sessionId, id, message, date, time);
 
     const messageObject = { sessionId, id, message, displayCount: 0 };
     if (date) {
