@@ -14,7 +14,7 @@ const storagePlaceRose = "S15P63";
 const storagePlaceHeart = "S15P64";
 
 const messageQueueFileName = 'messageQueue.json';
-const messageDuration = 20000;
+const messageDuration = 29000;
 const maxMessagesPerSession = 3;
 
 const defaultMessageDuration = 1000;
@@ -234,14 +234,13 @@ class MessageQueue {
     const activeMessages = [];
     const currentTimestampNumber = MessageQueue.getNowTimestampNumber();
     for (const timestampNumber of this.map.keys()) {
-      if (timestampNumber > currentTimestampNumber) {
-        break;
-      }
-      const timestampObject = this.map.get(timestampNumber);
-      for (let index = 0; index < timestampObject.messages.length; index++) {
-        let messageObject = timestampObject.messages[index];
-        if (messageObject.displayCount === undefined || messageObject.displayCount < 1) {      
-          activeMessages.push(messageObject);
+      if (timestampNumber <= currentTimestampNumber) {
+        const timestampObject = this.map.get(timestampNumber);
+        for (let index = 0; index < timestampObject.messages.length; index++) {
+          let messageObject = timestampObject.messages[index];
+          if (messageObject.displayCount === undefined || messageObject.displayCount < 1) {      
+            activeMessages.push(messageObject);
+          }
         }
       }
     }
