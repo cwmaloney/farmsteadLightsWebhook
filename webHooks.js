@@ -1031,7 +1031,7 @@ function checkName(request, response) {
     return;
   }
 
-  console.log(`checkName: ${name}`);
+  // console.log(`checkName: ${name}`);
 
   // check name
   let nameOkay = nameManager.isNameValid(name);
@@ -1145,7 +1145,7 @@ const actionHandlers = {
   'check.webhook.status': (request, response) => {
     const messageCount = messageQueue.getNextMessageId() - 1;
     const activeCount = messageQueue.getActiveMessages().length;
-    const queuedCount = message.getQueuedMessages().length;
+    const queuedCount = messageQueue.getQueuedMessages().length;
     let message = `Total message requests=${messageCount} ready=${activeCount} future=${queuedCount}`;
     fillResponse(request, response, message);
   },
@@ -1368,7 +1368,7 @@ function idleCheck()
       const elementName = elfComponent.name;
       applyCommand("idle", commandName, elementName);
       enqueueRequestPlaceholder("idle", elementName);
-      console.log(`-: ${commandName} ${elementName} ${getTimestamp(now)}`);
+      // console.log(`-: ${commandName} ${elementName} ${getTimestamp(now)}`);
     }
     counter++;
   }
@@ -1384,14 +1384,14 @@ function idleCheck()
         const colorName = idleColors[colorIndex];
         setElementColor("idle", colorName, "trees");
         enqueueRequestPlaceholder("idle", "trees");
-        console.log(`-: setElementColor ${colorIndex}/${colorName} trees ${getTimestamp(now)}`);
+        // console.log(`-: setElementColor ${colorIndex}/${colorName} trees ${getTimestamp(now)}`);
         break;
       case 2:
         const teamIndex = getRandomIntegerInclusive(1, idleTeams.length-1);
         const teamName = idleTeams[teamIndex];
         setElementToTeamColors("idle", teamName, "trees");
         enqueueRequestPlaceholder("idle", "trees");
-      console.log(`-: setElementToTeamColors ${teamIndex}/${teamName} trees ${getTimestamp(now)}`);
+        // console.log(`-: setElementToTeamColors ${teamIndex}/${teamName} trees ${getTimestamp(now)}`);
         break;
     }
   }
