@@ -1143,7 +1143,10 @@ const actionHandlers = {
   'add.name': addName,
 
   'check.webhook.status': (request, response) => {
-    let message = `The Farmstead Light's webhook server is running!`;
+    const messageCount = messageQueue.getNextMessageId() - 1;
+    const activeCount = messageQueue.getActiveMessages().length;
+    const queuedCount = message.getQueuedMessages().length;
+    let message = `Total message requests=${messageCount} ready=${activeCount} future=${queuedCount}`;
     fillResponse(request, response, message);
   },
 

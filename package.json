@@ -8,8 +8,8 @@
     "node": "^8.4"
   },
   "scripts": {
-    "lint": "eslint --fix \"**/*.js\"",
-    "link": "eslint \"**/*.js\"",
+    "lint": "eslint \"**/*.js\"",
+    "lintAndFix": "eslint --fix \"**/*.js\"",
     "start": "node webhooks.js",
     "testArtNet": "node testArtNet.js"
   },
