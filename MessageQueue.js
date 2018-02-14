@@ -15,7 +15,7 @@ const storagePlaceHeart = "S15P64";
 
 const messageQueueFileName = 'messageQueue.json';
 const messageDuration = 40000;
-const maxMessagesPerSession = 3;
+const maxMessagesPerSession = 5;
 
 const defaultMessageDuration = 1000;
 const defaultMessage = "Happy Valentine's Day - go to farmsteadLights.com to display your Valentine here.  ";
